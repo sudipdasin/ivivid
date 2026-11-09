@@ -2,6 +2,9 @@
 
 **Make every frame pop on your Linux laptop. No dedicated GPU needed.**
 
+![iVivid](screenshot.jpg)
+
+
 Supercharge video playback on integrated graphics. One click applies HDR-like color, sharp upscaling, and punchy audio — auto-tuned for your specific iGPU.
 
 ## Why
