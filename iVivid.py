@@ -190,7 +190,6 @@ class MpVConfig:
         style.configure("Dark.TFrame", background="#1e1e2e")
         style.configure("Dark.TCombobox", background="#313244", foreground="#cdd6f4",
                         fieldbackground="#313244", arrowcolor="#cdd6f4")
-        style.configure("Dark.TScale", background="#1e1e2e", troughcolor="#313244")
         style.configure("Status.TLabel", background="#1e1e2e", foreground="#a6e3a1", font=("Arial", 9))
         style.configure("Warn.TLabel", background="#1e1e2e", foreground="#f9e2af", font=("Arial", 9, "bold"))
 
@@ -320,7 +319,7 @@ class MpVConfig:
         self.bass_var = tk.IntVar(value=10)
         ttk.Label(bass_row, text="  Bass: ", style="Dark.TCheckbutton").pack(side=tk.LEFT)
         ttk.Scale(bass_row, from_=0, to=20, variable=self.bass_var, orient=tk.HORIZONTAL,
-                  length=150, style="Dark.TScale").pack(side=tk.LEFT, padx=5)
+                  length=150).pack(side=tk.LEFT, padx=5)
         self.bass_label = ttk.Label(bass_row, text="+10dB", style="Detail.TLabel")
         self.bass_label.pack(side=tk.LEFT)
         self.bass_var.trace_add("write", lambda *a: self.bass_label.config(text=f"+{self.bass_var.get()}dB"))
@@ -332,7 +331,7 @@ class MpVConfig:
         self.treble_var = tk.IntVar(value=10)
         ttk.Label(treb_row, text="  Treble: ", style="Dark.TCheckbutton").pack(side=tk.LEFT)
         ttk.Scale(treb_row, from_=0, to=20, variable=self.treble_var, orient=tk.HORIZONTAL,
-                  length=150, style="Dark.TScale").pack(side=tk.LEFT, padx=5)
+                  length=150).pack(side=tk.LEFT, padx=5)
         self.treble_label = ttk.Label(treb_row, text="+10dB", style="Detail.TLabel")
         self.treble_label.pack(side=tk.LEFT)
         self.treble_var.trace_add("write", lambda *a: self.treble_label.config(text=f"+{self.treble_var.get()}dB"))
