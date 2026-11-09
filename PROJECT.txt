@@ -1,0 +1,277 @@
+# ============================================================
+# PROJECT.txt - iVivid
+# Make every frame pop on your Linux laptop. No dedicated GPU needed.
+# ============================================================
+
+# --- BASIC INFO ---
+name: ivivid
+description: Supercharge video on Linux iGPUs - HDR-like color, sharp upscale, punchy audio. One click, no GPU required.
+license: MIT
+visibility: public
+author: sudipdasin
+language: Python
+version: 1.0.0
+keywords: mpv,smplayer,igpu,intel,video,enhancement,hdr,shaders,xfce,linux,configurator,upscaling,audio,480p,1080p
+
+# --- TAGLINE ---
+tagline: Make every frame pop on your Linux laptop. No dedicated GPU needed.
+
+# --- LONG DESCRIPTION (for README) ---
+long_description: |
+  iVivid turns your laptop's built-in graphics into a movie-night machine.
+  It auto-detects your iGPU (Intel HD, UHD, Iris Xe, AMD Radeon), picks the
+  perfect shader pipeline, and applies HDR-like contrast, vivid color,
+  adaptive sharpening, and punchy audio - all in one click.
+  No GPU tinkerers, no config files, no "which shader do I need?"
+  Just open a video and watch it look dramatically better than it should
+  on integrated graphics.
+
+# --- WHO IT'S FOR ---
+audience:
+  - "Anyone on Linux (XFCE, GNOME, KDE) with an integrated GPU"
+  - "Laptop users who think movies look flat/washed out"
+  - "People who don't want to edit mpv.conf by hand"
+  - "480p/720p rip collectors who want the best possible image"
+  - "Intel HD 620 / UHD 630 / Iris Xe / AMD Radeon iGPU users"
+
+# --- PROJECT STRUCTURE ---
+structure:
+  ivivid.py                # Main application (single file, no deps beyond stdlib)
+  PROJECT.txt              # This file - project metadata
+  README.md                # Auto-generated project overview
+  LICENSE                  # MIT License
+  CONTRIBUTING.md          # Contribution guide
+  CHANGELOG.md             # Changelog
+  .gitignore               # Ignore patterns
+  .gitattributes           # Text/binary rules
+  .editorconfig            # Editor settings
+  NOTES.md                 # Developer notes + TODO
+  shaders/
+    vivid_hdr.glsl         # Pseudo-HDR shader (S-curve, gamma, saturation, warm)
+    soft_look.glsl         # Gentle enhancement (lightest shader)
+  .github/
+    ISSUE_TEMPLATE/
+      bug_report.md        # Bug report template
+    PULL_REQUEST_TEMPLATE.md  # PR checklist
+    workflows/
+      ci.yml               # GitHub Actions CI
+
+# --- SCAFFOLD TOGGLES ---
+scaffold:
+  readme: yes
+  license: yes
+  contributing: yes
+  changelog: yes
+  gitignore: yes
+  gitattributes: yes
+  editorconfig: yes
+  notes: yes
+  issue_template: yes
+  pr_template: yes
+  cicd: yes
+
+# --- PREREQUISITES ---
+prerequisites:
+  - Linux (XFCE preferred, GNOME/KDE work)
+  - Python 3.8+
+  - mpv 0.39+ (sudo apt install mpv)
+  - SMPlayer (optional, sudo apt install smplayer)
+  - Intel/AMD iGPU with VA-API support
+  - python3-tk (sudo apt install python3-tk)
+  - No pip packages required (stdlib only)
+
+# --- INSTALLATION ---
+installation:
+  - "sudo apt install python3-tk mpv smplayer"
+  - "git clone https://github.com/sudipdasin/ivivid.git"
+  - "cd ivivid"
+  - "chmod +x ivivid.py"
+  - "python3 ivivid.py"
+
+# --- USAGE ---
+usage:
+  step1: "Open GUI (double-click or python3 ivivid.py)"
+  step2: "Select quality preset: LIGHT / BALANCED / MAX (one-click)"
+  step3: "Tweak individual options via checkboxes (hover for help)"
+  step4: "Click APPLY - writes mpv.conf + downloads shaders + disables compositor"
+  step5: "Play video: mpv /path/to/video.mp4 or smplayer /path/to/video.mp4"
+
+# --- FEATURES ---
+features:
+  video:
+    - "480p to 1080p fullscreen, no bars, no crop"
+    - "Pseudo-HDR look (S-curve contrast, gamma lift, saturation, warm tint, soft-clip)"
+    - "Adaptive sharpening (edge-aware, no halos)"
+    - "Chroma upscaling (KrigBilateral or CfL_Prediction)"
+    - "Debanding (built-in + hdeband shader)"
+    - "Dithering (temporal)"
+    - "EWA Lanczos Sharp scaler + sigmoid upscaling"
+    - "Hardware decode (VA-API)"
+    - "Auto-play next in folder"
+  audio:
+    - "Bass boost (0-20dB slider)"
+    - "Treble boost (0-20dB slider)"
+    - "3D Surround (stereowiden: narrow/wide/ultra)"
+    - "Compressor (dynamic range)"
+    - "Loudness normalize (EBU R128)"
+    - "Volume up to 150%"
+  system:
+    - "XFCE compositor auto-disable (biggest perf win)"
+    - "iGPU auto-detection (HD 620, UHD 630, Iris Xe, AMD)"
+    - "Quality presets auto-tuned per iGPU tier"
+  ui:
+    - "Dark theme (Catppuccin-inspired)"
+    - "Tooltips on every option (hover for details)"
+    - "Inline help text next to each checkbox"
+    - "Status bar updates on hover"
+    - "Scrollable interface"
+    - "Colored action buttons"
+
+# --- QUALITY PRESETS ---
+presets:
+  light:
+    description: "Minimum GPU load, 60fps guaranteed"
+    shaders: "soft_look + adaptive-sharpen"
+    scaling: "ewa_lanczossharp"
+    hwdec: "vaapi"
+    profile: "fast"
+    best_for: "HD 620, UHD 630, older iGPUs"
+  balanced:
+    description: "Best quality/performance ratio"
+    shaders: "vivid_hdr + CfL_Prediction + adaptive-sharpen"
+    scaling: "ewa_lanczossharp + sigmoid"
+    hwdec: "vaapi"
+    profile: "fast"
+    best_for: "HD 620, UHD 630, Iris Plus"
+  max:
+    description: "Maximum visual quality"
+    shaders: "vivid_hdr + KrigBilateral + hdeband + adaptive-sharpen"
+    scaling: "ewa_lanczossharp + sigmoid + correct-downscaling"
+    hwdec: "vaapi"
+    profile: "fast (off on Iris Xe)"
+    best_for: "Iris Xe, AMD iGPU (700M+)"
+
+# --- CONFIGURATION ---
+configuration:
+  config_file: "~/.config/mpv/mpv.conf"
+  input_file: "~/.config/mpv/input.conf"
+  shader_dir: "~/.config/mpv/shaders/"
+  local_shaders:
+    - "vivid_hdr.glsl (generated by app)"
+    - "soft_look.glsl (generated by app)"
+  downloaded_shaders:
+    - "KrigBilateral.glsl"
+    - "CfL_Prediction.glsl"
+    - "adaptive-sharpen.glsl"
+    - "ravu-r3-rgb.glsl"
+    - "hdeband.glsl"
+
+# --- HOTKEYS (during playback) ---
+hotkeys:
+  F: "Toggle fullscreen"
+  CTRL+1: "Shaders ON"
+  CTRL+2: "Shaders OFF"
+  "+": "Volume +5"
+  "-": "Volume -5"
+
+# --- CONTRIBUTING ---
+contributing:
+  workflow: fork-and-branch
+  branch_prefixes:
+    feat: "New features (new shaders, new presets, new options)"
+    fix: "Bug fixes"
+    docs: "Documentation only"
+    style: "Formatting, no logic change"
+    refactor: "Code change, no behavior change"
+    perf: "Performance improvements"
+    test: "Adding or updating tests"
+    chore: "Build process, dependencies"
+  commit_style: conventional-commits
+  pr_requirements:
+    - "Self-reviewed code"
+    - "Tested on at least one iGPU"
+    - "No new dependencies (stdlib only)"
+    - "No triple-quoted f-strings with backticks (paste-safe)"
+    - "Documentation updated"
+  code_style:
+    language: Python
+    max_line_length: 120
+    no_external_deps: true
+
+# --- BUG REPORTING ---
+bug_reporting:
+  template: ".github/ISSUE_TEMPLATE/bug_report.md"
+  required_fields:
+    - "Clear description of the bug"
+    - "Steps to reproduce"
+    - "Expected vs actual behavior"
+    - "OS and version"
+    - "Python version"
+    - "iGPU model (lspci | grep VGA)"
+    - "mpv version (mpv --version)"
+    - "Terminal output / traceback"
+  process:
+    - "Search existing issues first"
+    - "Use the bug report template"
+    - "Include iGPU model - fixes are iGPU-specific"
+
+# --- RELEASE PROCESS ---
+releases:
+  versioning: semantic-versioning
+  format: "vMAJOR.MINOR.PATCH"
+  process:
+    - "Update CHANGELOG.md"
+    - "git tag -a v1.0.0 -m 'Release v1.0.0'"
+    - "git push origin v1.0.0"
+  cadence: "Monthly minor releases, hotfixes as needed"
+
+# --- CI/CD ---
+ci:
+  platform: github-actions
+  triggers:
+    - "Push to main"
+    - "Pull request to main"
+  jobs:
+    - "Syntax check (ast.parse)"
+    - "Lint (py_compile)"
+    - "Import test (verify no missing stdlib modules)"
+
+# --- SECURITY ---
+security:
+  token_handling: "No tokens stored. App only writes mpv.conf and shaders."
+  data_storage: "~/.config/mpv/ (standard mpv location)"
+  no_network_calls: "Only downloads shaders from GitHub raw on first use"
+
+# --- ROADMAP ---
+roadmap:
+  v1_1:
+    - "NVIDIA dGPU support (CUDA hwdec)"
+    - "Per-file preset overrides"
+    - "Shader preview (A/B compare)"
+    - "Color picker for vivid_hdr parameters"
+  v2_0:
+    - "Batch mode (apply to all videos in folder)"
+    - "Web-based config dashboard"
+    - "Plugin system for custom shaders"
+    - "Preset sharing (export/import JSON)"
+  long_term:
+    - "Desktop app packaging (AppImage, .deb)"
+    - "Real-time FPS monitor overlay"
+    - "Auto-tune (benchmark shaders, pick best for your GPU)"
+
+# --- ACKNOWLEDGMENTS ---
+acknowledgments:
+  - "mpv player and its shader ecosystem"
+  - "KrigBilateral (by boned101)"
+  - "CfL_Prediction (by boned101)"
+  - "adaptive-sharpen (by boned101)"
+  - "ravu (by akirasuper)"
+  - "hdeband (by akirasuper)"
+  - "Python stdlib (tkinter, subprocess, os, json)"
+  - "Linux community for iGPU optimization tips"
+
+# --- CONTACT ---
+contact:
+  github: "https://github.com/sudipdasin"
+  issues: "https://github.com/sudipdasin/ivivid/issues"
+  discussions: "https://github.com/sudipdasin/ivivid/discussions"   
