@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install build and runtime dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake qt6-base-dev mpv ffmpeg dpkg-dev
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake qt6-base-dev mpv ffmpeg dpkg-dev xvfb xauth
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
       - name: Compile
@@ -48,6 +48,9 @@ jobs:
           timeout 5s env QT_QPA_PLATFORM=offscreen iVivid > /tmp/ivivid-gui.log 2>&1 && code=0 || code=$?
           test "$code" -eq 124 || test "$code" -eq 0
           cat /tmp/ivivid-gui.log
+          timeout 5s xvfb-run -a -s "-screen 0 1280x800x24" iVivid > /tmp/ivivid-xvfb.log 2>&1 && xcode=0 || xcode=$?
+          test "$xcode" -eq 124 || test "$xcode" -eq 0
+          cat /tmp/ivivid-xvfb.log
       - name: Inspect package
         run: |
           dpkg-deb --info dist/*.deb
