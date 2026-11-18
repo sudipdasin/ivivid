@@ -7,6 +7,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: ivivid-beta-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build-test-package:
     runs-on: ubuntu-24.04
@@ -67,6 +70,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          git fetch origin "$GITHUB_REF_NAME" --depth=1
+          current="$(git rev-parse "origin/$GITHUB_REF_NAME")"
+          if [ "$current" != "$GITHUB_SHA" ]; then
+            echo "Skipping stale build; newer commit is available"
+            exit 0
+          fi
           tag="v0.2.0-beta.4"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release already exists; uploading rebuilt assets"
