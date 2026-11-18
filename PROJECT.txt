@@ -1,20 +1,10 @@
-name: ivivid
-description: Supercharge video on Linux iGPUs - HDR-like color, sharp upscale, punchy audio. One click, no GPU required.
+name: iVivid
+description: Open-source Linux video and audio enhancement configurator for mpv
 license: MIT
 visibility: public
 author: sudipdasin
-language: Python
-version: 1.0.0
-keywords: mpv,smplayer,igpu,intel,video,enhancement,hdr,shaders,xfce,linux,configurator,upscaling,audio,480p,1080p
-scaffold:
-  readme: yes
-  license: yes
-  contributing: yes
-  changelog: yes
-  gitignore: yes
-  gitattributes: yes
-  editorconfig: yes
-  notes: yes
-  issue_template: yes
-  pr_template: yes
-  cicd: yes
+language: C++
+version: 0.2.0-beta.1
+framework: Qt 6 Widgets
+build: CMake
+status: source-preview-unverified
