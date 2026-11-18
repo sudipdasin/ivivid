@@ -11,7 +11,8 @@
 #include <QTemporaryDir>
 #include <QTest>
 #include <cstdlib>
-#define CHECK(expr) do { if (!(expr)) std::abort(); } while (false)
+#include <cstdio>
+#define CHECK(expr) do { if (!(expr)) { std::fprintf(stderr, "CHECK failed: %s at %s:%d\\n", #expr, __FILE__, __LINE__); std::fflush(stderr); std::abort(); } } while (false)
 
 int main(int argc, char **argv) {
     QTemporaryDir configRoot;
@@ -20,7 +21,7 @@ int main(int argc, char **argv) {
     QApplication app(argc, argv);
     MainWindow window;
     window.show();
-    QTest::qWaitForWindowExposed(&window);
+    QCoreApplication::processEvents();
     CHECK(window.isVisible());
     auto *tabs = window.findChild<QTabWidget *>();
     CHECK(tabs && tabs->count() == 3);
@@ -39,7 +40,8 @@ int main(int argc, char **argv) {
     tabs->setCurrentIndex(2);
     normalize->setChecked(true);
     tabs->setCurrentIndex(0);
-    QTest::mouseClick(save, Qt::LeftButton);
+    save->click();
+    QCoreApplication::processEvents();
     CHECK(status->text().startsWith("Saved."));
     QFile file(ivivid::configPath());
     CHECK(file.open(QIODevice::ReadOnly));
