@@ -1,17 +1,12 @@
-# iVivid architecture (C++ beta preview)
+# iVivid C++ architecture
 
-iVivid is a Qt 6 Widgets desktop application. It does not modify video files. It generates a user-level mpv configuration for playback enhancement.
+The application uses Qt 6 Widgets for its GUI, with separate Video, Audio and Experimental tabs. Config serialization is implemented in `src/Config.cpp` and validated by `tests/config_tests.cpp`.
 
-- `src/main.cpp`: Qt application startup.
-- `src/MainWindow.*`: presentation, controls and user feedback.
-- `src/Config.*`: validated settings, mpv serialization and atomic persistence.
-- `tests/`: isolated configuration unit tests.
+## Non-destructive integration
+iVivid writes only `~/.config/iVivid/mpv.conf` via QSaveFile. It does not overwrite the user's normal `~/.config/mpv/mpv.conf`. The `ivivid-play` launcher invokes mpv with `--include` to load iVivid's generated settings alongside regular mpv settings. No elevated privileges are needed to use the GUI.
 
-## Safety model
-No root privileges are required. Settings are range-validated before serialization. The first preexisting `~/.config/mpv/mpv.conf` is copied to `mpv.conf.ivivid-backup`. Writes use `QSaveFile` for atomic replacement. **Important:** applying iVivid replaces the active mpv.conf, so users with complex configurations should review the preview and backup first.
+## Packaging
+CMake installs the executable, launcher and desktop entry. CI compiles on Ubuntu 24.04, runs CTest and builds an amd64 Debian package. Package compatibility beyond the CI distro is not guaranteed.
 
-## Design boundaries
-Qt owns UI only; config logic is separately testable. mpv remains the playback engine. A future iteration should merge or use an isolated profile instead of replacing the entire config, and introduce capability detection, profile import/export, shader availability checks and diagnostics.
-
-## Compatibility
-Qt 6.2+, C++17, CMake 3.20+, mpv in PATH. Hardware decoding depends on driver support and mpv's platform-specific backend; not guaranteed by this application.
+## Boundaries
+The application configures playback rather than modifying source media. Hardware decode is best-effort. The experimental tab is opt-in; additional shaders and capability detection are future development.
