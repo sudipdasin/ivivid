@@ -49,4 +49,24 @@ int main() {
     CHECK(saved.open(QIODevice::ReadOnly));
     CHECK(QString::fromUtf8(saved.readAll()) == ivivid::renderMpv(s));
     CHECK(!QFile::exists(configRoot.path() + "/mpv/mpv.conf"));
+    ivivid::Settings loaded;
+    CHECK(ivivid::loadConfig(&loaded, &error));
+    CHECK(loaded.preset == s.preset);
+    CHECK(loaded.saturation == s.saturation);
+    CHECK(loaded.brightness == s.brightness);
+    CHECK(loaded.contrast == s.contrast);
+    CHECK(loaded.bass == s.bass);
+    CHECK(loaded.treble == s.treble);
+    CHECK(loaded.hardwareDecode == s.hardwareDecode);
+    CHECK(loaded.deband == s.deband);
+    CHECK(loaded.normalize == s.normalize);
+    CHECK(ivivid::renderMpv(loaded) == ivivid::renderMpv(s));
+    QFile invalid(ivivid::configPath());
+    CHECK(invalid.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    CHECK(invalid.write("saturation=not-a-number\\n") > 0);
+    invalid.close();
+    ivivid::Settings untouched;
+    untouched.saturation = 133;
+    CHECK(!ivivid::loadConfig(&untouched, &error));
+    CHECK(untouched.saturation == 133);
 }
