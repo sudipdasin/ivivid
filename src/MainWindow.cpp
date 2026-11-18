@@ -37,27 +37,31 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *video = new QWidget(tabs);
     auto *vf = new QFormLayout(video);
     preset_ = new QComboBox(video);
+    preset_->setObjectName("qualityPreset");
     preset_->addItems({"Light — efficiency", "Balanced — everyday", "Max — visual quality"});
     preset_->setCurrentIndex(1);
     vf->addRow("Quality preset", preset_);
-    saturation_ = slider(50, 200, 110); vf->addRow("Saturation (%)", saturation_);
-    brightness_ = slider(-20, 20, 0); vf->addRow("Brightness", brightness_);
-    contrast_ = slider(-20, 20, 0); vf->addRow("Contrast", contrast_);
+    saturation_ = slider(50, 200, 110); saturation_->setObjectName("saturationSlider"); vf->addRow("Saturation (%)", saturation_);
+    brightness_ = slider(-20, 20, 0); brightness_->setObjectName("brightnessSlider"); vf->addRow("Brightness", brightness_);
+    contrast_ = slider(-20, 20, 0); contrast_->setObjectName("contrastSlider"); vf->addRow("Contrast", contrast_);
     hardware_ = new QCheckBox("Safe hardware decoding (when available)", video);
+    hardware_->setObjectName("hardwareDecode");
     hardware_->setChecked(true); vf->addRow(hardware_);
     deband_ = new QCheckBox("Reduce color banding", video);
+    deband_->setObjectName("debandEnabled");
     deband_->setChecked(true); vf->addRow(deband_);
     tabs->addTab(video, "Video");
     auto *audio = new QWidget(tabs);
     auto *af = new QFormLayout(audio);
-    bass_ = slider(0, 20, 0); af->addRow("Bass boost (dB)", bass_);
-    treble_ = slider(0, 20, 0); af->addRow("Treble boost (dB)", treble_);
+    bass_ = slider(0, 20, 0); bass_->setObjectName("bassSlider"); af->addRow("Bass boost (dB)", bass_);
+    treble_ = slider(0, 20, 0); treble_->setObjectName("trebleSlider"); af->addRow("Treble boost (dB)", treble_);
     tabs->addTab(audio, "Audio");
     auto *experimental = new QWidget(tabs);
     auto *ef = new QVBoxLayout(experimental);
     auto *warning = new QLabel("Experimental options may increase CPU use, latency or audio distortion.", experimental);
     warning->setWordWrap(true); ef->addWidget(warning);
     normalize_ = new QCheckBox("Experimental: EBU R128 loudness normalization", experimental);
+    normalize_->setObjectName("normalizeEnabled");
     normalize_->setToolTip("Uses FFmpeg loudnorm via mpv. Behavior depends on your mpv/FFmpeg build.");
     ef->addWidget(normalize_);
     ef->addWidget(new QLabel("Future experiments: GPU capability detection, custom shaders and A/B playback.", experimental));
@@ -69,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     hint->setObjectName("workflowHint");
     layout->addWidget(hint);
     status_ = new QLabel(root);
+    status_->setObjectName("statusMessage");
     status_->setWordWrap(true);
     status_->setText(QStandardPaths::findExecutable("mpv").isEmpty()
         ? "mpv not found in PATH. Install mpv before testing playback."
@@ -76,8 +81,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     layout->addWidget(status_);
     auto *actions = new QHBoxLayout();
     auto *preview = new QPushButton("Preview settings", root);
+    preview->setObjectName("previewSettings");
     auto *apply = new QPushButton("Save settings", root);
+    apply->setObjectName("saveSettings");
     auto *play = new QPushButton("Test video…", root);
+    play->setObjectName("testVideo");
     apply->setObjectName("primaryButton");
     actions->addWidget(preview); actions->addWidget(apply); actions->addWidget(play);
     layout->addLayout(actions);
