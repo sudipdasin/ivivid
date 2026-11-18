@@ -1,19 +1,51 @@
-name: iVivid C++ CI
+name: iVivid Linux beta build
 on:
   push:
-    branches: [main, "beta/**"]
+    branches: ["beta/**"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
 jobs:
-  build-test:
+  build-test-package:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake qt6-base-dev mpv
+      - name: Install build and runtime dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake qt6-base-dev mpv dpkg-dev
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
-      - name: Build
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+      - name: Compile
         run: cmake --build build --parallel 2
-      - name: Test
+      - name: Run unit tests
         run: ctest --test-dir build --output-on-failure
+      - name: Test launcher quoting
+        run: bash tests/launcher_tests.sh
+      - name: Build Debian package
+        run: bash packaging/build-deb.sh
+      - name: Inspect package
+        run: |
+          dpkg-deb --info dist/*.deb
+          dpkg-deb --contents dist/*.deb
+          sha256sum dist/*.deb > dist/SHA256SUMS
+      - name: Upload downloadable beta package
+        uses: actions/upload-artifact@v4
+        with:
+          name: iVivid-ubuntu2404-amd64-beta
+          path: dist/*
+          if-no-files-found: error
+      - name: Publish prerelease assets (successful branch build only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/beta/cpp-preview-0.2.0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v0.2.0-beta.2"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists; uploading rebuilt assets"
+            gh release upload "$tag" dist/* --clobber
+          else
+            gh release create "$tag" dist/* --target "$GITHUB_SHA" --prerelease \
+              --title "iVivid v0.2.0-beta.2 — Linux public test preview" \
+              --notes "Experimental public beta for Ubuntu 24.04 amd64. Includes C++/Qt GUI, Video, Audio and Experimental tabs, isolated mpv settings, and ivivid-play launcher. Hardware compatibility is not yet fully verified. See README for installation and known limitations."
+          fi
