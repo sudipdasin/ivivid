@@ -1,10 +1,15 @@
-# v0.3.0-beta.1 (Linux beta preview)
+# v0.4.0-beta.1 (Linux beta preview)
+- Add one-click Reset defaults without silently overwriting saved preferences.
+- Verify GUI persistence across windows and reset/save behavior using VM-driven Qt tests.
+- Preserve isolated mpv configuration and backward-compatible loading.
+
+# v0.4.0-beta.1 (Linux beta preview)
 - Restore last saved video and audio enhancement controls at startup.
 - Validate persisted settings and reject malformed configurations without overwriting defaults.
 - Add VM-backed round-trip and malformed-configuration regression tests.
 - Retain Linux build, real mpv media playback, GUI interaction, and ASan/UBSan VM gates.
 
-## [0.3.0-beta.1] — 2026-11-18
+## [0.4.0-beta.1] — 2026-11-18
 ### Testing
 - Decode generated video and audio through mpv with video and audio enhancement settings
 - Verify loudness normalization independently
