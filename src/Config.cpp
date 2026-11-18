@@ -35,10 +35,10 @@ QString renderMpv(const Settings &s) {
 QString configPath() {
     return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/iVivid/mpv.conf";
 }
-bool loadConfig(Settings *settings, QString *error) {
+bool loadConfigFile(const QString &path, Settings *settings, QString *error) {
     if (!settings) { if (error) *error = "Missing settings destination"; return false; }
-    QFile file(configPath());
-    if (!file.exists()) return true;
+    QFile file(path);
+    if (!file.exists()) { if (error) *error = "Configuration file does not exist"; return false; }
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         if (error) *error = file.errorString();
         return false;
@@ -102,6 +102,10 @@ bool loadConfig(Settings *settings, QString *error) {
     if (!invalid.isEmpty()) { if (error) *error = invalid; return false; }
     *settings = next;
     return true;
+}
+bool loadConfig(Settings *settings, QString *error) {
+    if (!QFile::exists(configPath())) return true;
+    return loadConfigFile(configPath(), settings, error);
 }
 bool applyConfig(const Settings &s, QString *error) {
     const auto invalid = validate(s);
