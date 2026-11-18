@@ -2,6 +2,8 @@
 #include "../src/Config.hpp"
 #include <QApplication>
 #include <QCheckBox>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QComboBox>
 #include <QFile>
 #include <QLabel>
@@ -31,8 +33,9 @@ int main(int argc, char **argv) {
     auto *normalize = window.findChild<QCheckBox *>("normalizeEnabled");
     auto *save = window.findChild<QPushButton *>("saveSettings");
     auto *reset = window.findChild<QPushButton *>("resetDefaults");
+    auto *copy = window.findChild<QPushButton *>("copySettings");
     auto *status = window.findChild<QLabel *>("statusMessage");
-    CHECK(preset && sat && bass && normalize && save && reset && status);
+    CHECK(preset && sat && bass && normalize && save && reset && copy && status);
     CHECK(preset->count() == 3);
     preset->setCurrentIndex(2);
     sat->setValue(140);
@@ -41,6 +44,10 @@ int main(int argc, char **argv) {
     tabs->setCurrentIndex(2);
     normalize->setChecked(true);
     tabs->setCurrentIndex(0);
+    copy->click();
+    CHECK(QGuiApplication::clipboard()->text().contains("saturation=40"));
+    CHECK(QGuiApplication::clipboard()->text().contains("loudnorm"));
+    CHECK(!QFile::exists(ivivid::configPath()));
     save->click();
     QCoreApplication::processEvents();
     CHECK(status->text().startsWith("Saved."));
