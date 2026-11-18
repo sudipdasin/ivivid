@@ -16,5 +16,7 @@ struct Settings {
 QString validate(const Settings &settings);
 QString renderMpv(const Settings &settings);
 QString configPath();
+// Load settings saved by iVivid; leave defaults intact on missing/invalid files.
+bool loadConfig(Settings *settings, QString *error);
 bool applyConfig(const Settings &settings, QString *error);
 }
