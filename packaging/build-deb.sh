@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-version="0.2.0-beta.2"
+version="0.2.0-beta.3"
 stage="$PWD/build/package-root"
 rm -rf "$stage"
 DESTDIR="$stage" cmake --install build --prefix /usr
