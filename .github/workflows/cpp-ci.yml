@@ -22,8 +22,30 @@ jobs:
         run: ctest --test-dir build --output-on-failure
       - name: Test launcher quoting
         run: bash tests/launcher_tests.sh
+      - name: Test generated mpv configuration
+        run: |
+          mkdir -p "$HOME/.config/iVivid"
+          cat > "$HOME/.config/iVivid/mpv.conf" <<'EOF'
+          hwdec=auto-safe
+          scale=bilinear
+          cscale=bilinear
+          deband=yes
+          saturation=10
+          brightness=0
+          contrast=0
+          EOF
+          mpv --no-config --include="$HOME/.config/iVivid/mpv.conf" --list-options > /dev/null
       - name: Build Debian package
         run: bash packaging/build-deb.sh
+      - name: Install and smoke-test Debian package
+        run: |
+          sudo apt-get install -y ./dist/ivivid_0.2.0-beta.2_amd64.deb
+          command -v iVivid
+          command -v ivivid-play
+          test -f /usr/share/applications/iVivid.desktop
+          timeout 5s env QT_QPA_PLATFORM=offscreen iVivid > /tmp/ivivid-gui.log 2>&1 && code=0 || code=$?
+          test "$code" -eq 124 || test "$code" -eq 0
+          cat /tmp/ivivid-gui.log
       - name: Inspect package
         run: |
           dpkg-deb --info dist/*.deb
@@ -36,7 +58,7 @@ jobs:
           path: dist/*
           if-no-files-found: error
       - name: Publish prerelease assets (successful branch build only)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/beta/cpp-preview-0.2.0'
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/beta/cpp-preview-0.2.0'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
