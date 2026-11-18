@@ -37,3 +37,10 @@ jobs:
           timeout 5s xvfb-run -a -s "-screen 0 1280x800x24" ./build/iVivid > /tmp/ivivid-gui.log 2>&1 && code=0 || code=$?
           cat /tmp/ivivid-gui.log
           test "$code" -eq 124 || test "$code" -eq 0
+      - name: Upload GUI smoke diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gui-log-${{ matrix.os }}-${{ matrix.build }}
+          path: /tmp/ivivid-gui.log
+          if-no-files-found: ignore
