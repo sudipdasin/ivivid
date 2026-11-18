@@ -2,6 +2,13 @@
 
 All notable changes to iVivid are documented here.
 
+## [0.2.0-beta.3] — 2026-11-18
+### Added
+- In-app video file chooser and mpv playback test launcher
+- Separate Video, Audio and Experimental tabs
+- Isolated iVivid mpv configuration and Debian installer
+- CI package installation, headless Qt startup and launcher smoke tests
+
 ## [0.2.0-beta.1] — 2026-11-18
 ### Added
 - C++17 / Qt 6 desktop application preview
