@@ -25,7 +25,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *title = new QLabel("iVivid", root);
     title->setObjectName("appTitle");
     layout->addWidget(title);
-    layout->addWidget(new QLabel("Enhance mpv playback without changing your existing mpv configuration.", root));
+    auto *subtitle = new QLabel("Video & audio enhancement  •  Linux  •  mpv engine", root);
+    subtitle->setObjectName("subtitle");
+    layout->addWidget(subtitle);
     auto slider = [this](int min, int max, int value) {
         auto *s = new QSlider(Qt::Horizontal, this);
         s->setRange(min, max); s->setValue(value);
@@ -61,7 +63,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     ef->addWidget(new QLabel("Future experiments: GPU capability detection, custom shaders and A/B playback.", experimental));
     ef->addStretch();
     tabs->addTab(experimental, "Experimental");
+    tabs->setDocumentMode(true);
     layout->addWidget(tabs);
+    auto *hint = new QLabel("STEP 1  Adjust enhancements     STEP 2  Preview or save     STEP 3  Test video", root);
+    hint->setObjectName("workflowHint");
+    layout->addWidget(hint);
     status_ = new QLabel(root);
     status_->setWordWrap(true);
     status_->setText(QStandardPaths::findExecutable("mpv").isEmpty()
@@ -108,7 +114,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setCentralWidget(root);
     setStyleSheet(R"(
       QMainWindow, QWidget { background: #121923; color: #e8eef7; font-size: 14px; }
-      QLabel#appTitle { font-size: 30px; font-weight: 700; color: #79c7ff; }
+      QLabel#appTitle { font-size: 36px; font-weight: 800; color: #79c7ff; }
+      QLabel#subtitle { color: #9eafc1; font-size: 13px; }
+      QLabel#workflowHint { color: #89b7d8; font-weight: 600; font-size: 12px; }
+      QLabel { padding: 3px; }
+      QTabWidget { background: #121923; }
+      QTabBar::tab:hover { background: #36526b; }
+      QSlider::groove:horizontal { background: #304358; height: 6px; border-radius: 3px; }
+      QSlider::sub-page:horizontal { background: #168bd7; border-radius: 3px; }
+      QSlider::handle:horizontal { background: #a8ddff; width: 16px; margin: -5px 0; border-radius: 8px; }
+      QCheckBox { spacing: 10px; }
+      QCheckBox::indicator { width: 18px; height: 18px; }
+      QCheckBox::indicator:checked { background: #168bd7; border-radius: 4px; }
+      QCheckBox::indicator:unchecked { border: 1px solid #617c97; border-radius: 4px; }
+
       QTabWidget::pane { border: 1px solid #334355; border-radius: 8px; }
       QTabBar::tab { background: #27394d; padding: 10px 17px; margin-right: 3px; }
       QTabBar::tab:selected { background: #1479c8; }
