@@ -86,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     apply->setObjectName("saveSettings");
     auto *play = new QPushButton("Test video…", root);
     play->setObjectName("testVideo");
-    apply->setObjectName("primaryButton");
+    // Keep saveSettings as the stable automation identifier.
     actions->addWidget(preview); actions->addWidget(apply); actions->addWidget(play);
     layout->addLayout(actions);
     connect(play, &QPushButton::clicked, this, [this] {
@@ -141,7 +141,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
       QTabBar::tab:selected { background: #1479c8; }
       QPushButton { background: #27394d; border-radius: 7px; padding: 11px 15px; }
       QPushButton:hover { background: #35516c; }
-      QPushButton#primaryButton { background: #1479c8; color: white; font-weight: 700; }
+      QPushButton#saveSettings { background: #1479c8; color: white; font-weight: 700; }
       QComboBox { background: #27394d; padding: 7px; border-radius: 5px; }
     )");
 }
