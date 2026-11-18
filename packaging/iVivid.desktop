@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=iVivid
+GenericName=Video Enhancement
+Comment=Configure video and audio enhancement for mpv
+Exec=iVivid
+Terminal=false
+Categories=AudioVideo;Video;Settings;
+StartupNotify=true
