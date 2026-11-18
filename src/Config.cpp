@@ -1,6 +1,8 @@
 #include "Config.hpp"
 #include <QDir>
 #include <QFileInfo>
+#include <QFile>
+#include <QMap>
 #include <QSaveFile>
 #include <QStandardPaths>
 #include <QStringList>
@@ -32,6 +34,74 @@ QString renderMpv(const Settings &s) {
 }
 QString configPath() {
     return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/iVivid/mpv.conf";
+}
+bool loadConfig(Settings *settings, QString *error) {
+    if (!settings) { if (error) *error = "Missing settings destination"; return false; }
+    QFile file(configPath());
+    if (!file.exists()) return true;
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        if (error) *error = file.errorString();
+        return false;
+    }
+    const QString data = QString::fromUtf8(file.readAll());
+    QMap<QString, QString> values;
+    for (const QString &raw : data.split('\n')) {
+        const QString line = raw.trimmed();
+        if (line.isEmpty() || line.startsWith('#')) continue;
+        const qsizetype pos = line.indexOf('=');
+        if (pos < 1) { if (error) *error = "Malformed configuration line"; return false; }
+        values.insert(line.left(pos).trimmed(), line.mid(pos + 1).trimmed());
+    }
+    Settings next;
+    const auto number = [&](const QString &key, int *out, int offset = 0) -> bool {
+        if (!values.contains(key)) return true;
+        bool ok = false;
+        const int n = values.value(key).toInt(&ok);
+        if (ok) *out = n + offset;
+        return ok;
+    };
+    if (!number("saturation", &next.saturation, 100) ||
+        !number("brightness", &next.brightness) ||
+        !number("contrast", &next.contrast)) {
+        if (error) *error = "Invalid numeric configuration";
+        return false;
+    }
+    const QString scale = values.value("scale", "ewa_lanczossharp");
+    const QString cscale = values.value("cscale", "bilinear");
+    if (scale == "bilinear" && cscale == "bilinear") next.preset = 0;
+    else if (scale == "ewa_lanczossharp" && cscale == "bilinear") next.preset = 1;
+    else if (scale == "ewa_lanczossharp" && cscale == "ewa_lanczossharp") next.preset = 2;
+    else { if (error) *error = "Unknown video preset"; return false; }
+    const QString hwdec = values.value("hwdec", "auto-safe");
+    if (hwdec != "auto-safe" && hwdec != "no") {
+        if (error) *error = "Invalid hardware decoding option"; return false;
+    }
+    next.hardwareDecode = hwdec == "auto-safe";
+    const QString deband = values.value("deband", "yes");
+    if (deband != "yes" && deband != "no") {
+        if (error) *error = "Invalid deband option"; return false;
+    }
+    next.deband = deband == "yes";
+    const QString filters = values.value("af");
+    next.normalize = filters.contains("lavfi=[loudnorm=I=-16:TP=-1.5:LRA=11]");
+    for (const auto &part : filters.split(',', Qt::SkipEmptyParts)) {
+        if (part.startsWith("lavfi=[equalizer=f=100:t=h:w=200:g=") && part.endsWith(']')) {
+            bool ok = false;
+            next.bass = part.mid(QString("lavfi=[equalizer=f=100:t=h:w=200:g=").size()).chopped(1).toInt(&ok);
+            if (!ok) { if (error) *error = "Invalid bass filter"; return false; }
+        } else if (part.startsWith("lavfi=[equalizer=f=6000:t=h:w=200:g=") && part.endsWith(']')) {
+            bool ok = false;
+            next.treble = part.mid(QString("lavfi=[equalizer=f=6000:t=h:w=200:g=").size()).chopped(1).toInt(&ok);
+            if (!ok) { if (error) *error = "Invalid treble filter"; return false; }
+        } else if (part != "lavfi=[loudnorm=I=-16:TP=-1.5:LRA=11]") {
+            if (error) *error = "Unknown audio filter";
+            return false;
+        }
+    }
+    const QString invalid = validate(next);
+    if (!invalid.isEmpty()) { if (error) *error = invalid; return false; }
+    *settings = next;
+    return true;
 }
 bool applyConfig(const Settings &s, QString *error) {
     const auto invalid = validate(s);
