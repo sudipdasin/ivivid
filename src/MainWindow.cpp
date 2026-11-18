@@ -120,6 +120,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         else status_->setText("Saved. Open a video with ivivid-play /path/to/video.mp4 to test.");
     });
     setCentralWidget(root);
+    ivivid::Settings restored;
+    QString restoreError;
+    if (ivivid::loadConfig(&restored, &restoreError)) {
+        preset_->setCurrentIndex(restored.preset);
+        saturation_->setValue(restored.saturation);
+        brightness_->setValue(restored.brightness);
+        contrast_->setValue(restored.contrast);
+        bass_->setValue(restored.bass);
+        treble_->setValue(restored.treble);
+        hardware_->setChecked(restored.hardwareDecode);
+        deband_->setChecked(restored.deband);
+        normalize_->setChecked(restored.normalize);
+    } else {
+        status_->setText("Could not restore saved settings: " + restoreError);
+    }
     setStyleSheet(R"(
       QMainWindow, QWidget { background: #121923; color: #e8eef7; font-size: 14px; }
       QLabel#appTitle { font-size: 36px; font-weight: 800; color: #79c7ff; }
