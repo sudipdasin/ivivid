@@ -65,8 +65,21 @@ jobs:
           name: iVivid-ubuntu2404-amd64-beta
           path: dist/*
           if-no-files-found: error
-      - name: Release publication permissions check
+      - name: Retry GitHub prerelease publication with GITHUB_TOKEN
+        if: github.event_name == 'push' && github.ref == 'refs/heads/beta/cpp-preview-0.2.0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Verified installer is available as a workflow artifact."
-          echo "GitHub release publication requires repository Actions write permissions."
-          echo "Download from this run's Artifacts section until publication access is enabled."
+          set -euo pipefail
+          tag="v0.2.0-beta.4"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists; not replacing immutable tested assets."
+            exit 0
+          fi
+          if gh release create "$tag" dist/* --target "$GITHUB_SHA" --prerelease \
+            --title "iVivid v0.2.0-beta.4 — Linux test preview" \
+            --notes "Ubuntu 24.04 amd64 test preview. Validated by CI: C++ tests, synthetic mpv video/audio decoding, package installation and virtual-display GUI startup. Hardware GPU/HDR behavior remains unverified."; then
+            echo "Release published."
+          else
+            echo "::warning::GitHub denied release publication. Check Settings > Actions > General > Workflow permissions and select Read and write permissions; Actions artifact remains downloadable."
+          fi
