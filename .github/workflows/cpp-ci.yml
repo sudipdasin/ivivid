@@ -65,23 +65,8 @@ jobs:
           name: iVivid-ubuntu2404-amd64-beta
           path: dist/*
           if-no-files-found: error
-      - name: Publish prerelease assets (successful branch build only)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/beta/cpp-preview-0.2.0'
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Release publication permissions check
         run: |
-          git fetch origin "$GITHUB_REF_NAME" --depth=1
-          current="$(git rev-parse "origin/$GITHUB_REF_NAME")"
-          if [ "$current" != "$GITHUB_SHA" ]; then
-            echo "Skipping stale build; newer commit is available"
-            exit 0
-          fi
-          tag="v0.2.0-beta.4"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Release already exists; uploading rebuilt assets"
-            gh release upload "$tag" dist/* --clobber
-          else
-            gh release create "$tag" dist/* --target "$GITHUB_SHA" --prerelease \
-              --title "iVivid v0.2.0-beta.4 — Linux public test preview" \
-              --notes "Experimental public beta for Ubuntu 24.04 amd64. Includes C++/Qt GUI, Video, Audio and Experimental tabs, isolated mpv settings, and ivivid-play launcher. Hardware compatibility is not yet fully verified. See README for installation and known limitations."
-          fi
+          echo "Verified installer is available as a workflow artifact."
+          echo "GitHub release publication requires repository Actions write permissions."
+          echo "Download from this run's Artifacts section until publication access is enabled."
