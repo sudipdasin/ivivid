@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
                             << "  --version        Print application version\n"
                             << "  --help           Show this help\n"
                             << "  --check-config   Validate saved iVivid mpv settings\n"
-                            << "  --print-config   Print current effective mpv settings\n";
+                            << "  --print-config   Print current effective mpv settings\n"\n                            << "  --export-config FILE  Export effective settings atomically\n";
         return 0;
     }
     const int exportIndex = args.indexOf("--export-config");
