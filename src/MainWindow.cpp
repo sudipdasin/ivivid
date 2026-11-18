@@ -2,6 +2,9 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFormLayout>
+#include <QFileDialog>
+#include <QProcess>
+#include <QFileInfo>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -68,9 +71,31 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *actions = new QHBoxLayout();
     auto *preview = new QPushButton("Preview settings", root);
     auto *apply = new QPushButton("Save settings", root);
+    auto *play = new QPushButton("Test video…", root);
     apply->setObjectName("primaryButton");
-    actions->addWidget(preview); actions->addWidget(apply);
+    actions->addWidget(preview); actions->addWidget(apply); actions->addWidget(play);
     layout->addLayout(actions);
+    connect(play, &QPushButton::clicked, this, [this] {
+        const QString file = QFileDialog::getOpenFileName(this, "Choose a video to test", QString(),
+            "Video files (*.mp4 *.mkv *.webm *.avi *.mov *.m4v);;All files (*)");
+        if (file.isEmpty()) return;
+        QString error;
+        if (!ivivid::applyConfig(settings(), &error)) {
+            QMessageBox::critical(this, "Could not save settings", error);
+            return;
+        }
+        const QString mpv = QStandardPaths::findExecutable("mpv");
+        if (mpv.isEmpty()) {
+            QMessageBox::warning(this, "mpv unavailable", "Install mpv to test playback.");
+            return;
+        }
+        const QStringList args = {"--include=" + ivivid::configPath(), file};
+        if (!QProcess::startDetached(mpv, args)) {
+            QMessageBox::critical(this, "Playback failed", "Could not launch mpv.");
+            return;
+        }
+        status_->setText("Started playback: " + QFileInfo(file).fileName());
+    });
     connect(preview, &QPushButton::clicked, this, [this] {
         QMessageBox::information(this, "iVivid mpv settings", ivivid::renderMpv(settings()));
     });
