@@ -25,7 +25,7 @@ if "$app" --export-config; then
   exit 1
 fi
 test -s "$tmp/export.conf"
-\nprintf 'saturation=invalid\n' > "$tmp/iVivid/mpv.conf"
+\printf 'saturation=invalid\n' > "$tmp/iVivid/mpv.conf"
 if "$app" --check-config > "$tmp/out" 2> "$tmp/err"; then
   echo 'Expected invalid config to fail' >&2
   exit 1
