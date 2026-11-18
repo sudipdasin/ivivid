@@ -17,7 +17,7 @@ Your laptop's integrated GPU can make movies look dramatically better — but fi
 
 ## Run
 
-    python3 ivivid.py
+    python3 iVivid.py
 
 ## How it works
 
@@ -88,7 +88,11 @@ Works with both **mpv** and **SMPlayer** (mpv engine).
 ## Project Structure
 
     ivivid/
-    ├── ivivid.py                # Main application (single file)
+    ├── iVivid.py                # Existing Free GUI entry point
+    ├── ivivid_core/             # Public edition and extension contracts
+    ├── tools/                   # Public-source safety checks
+    ├── tests/                   # Public contract tests
+    ├── docs/                    # Free/Pro strategy and bootstrap
     ├── PROJECT.txt              # Project metadata
     ├── README.md
     ├── LICENSE
@@ -103,6 +107,14 @@ Works with both **mpv** and **SMPlayer** (mpv engine).
         ├── PULL_REQUEST_TEMPLATE.md
         └── workflows/
             └── ci.yml
+
+## Editions and future roadmap
+
+**iVivid Free** is MIT-licensed, open source, and remains fully functional without a paid account. A separately distributed **iVivid Pro** is planned; it is **not yet implemented or released**. New proprietary algorithms and commercial resources will live in a **separate private repository**, not in this public source tree. The public `ivivid_core/` package contains edition descriptions and versioned data-only extension contracts, not proprietary implementation.
+
+For architecture, one-way synchronization, and proposed premium features, see [Edition Strategy](docs/EDITION_STRATEGY.md) and [Private Repository Bootstrap](docs/PRIVATE_REPO_BOOTSTRAP.md).
+
+Contributors can develop Free without needing private code. Public boundary checks can be run with `python3 tools/check_public_boundary.py` and `python3 -m unittest discover -s tests -v`.
 
 ## License
 
@@ -121,4 +133,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
-**One file. One click. Better movies.**
+**Open-source Free today. Separately developed Pro in the future.**
