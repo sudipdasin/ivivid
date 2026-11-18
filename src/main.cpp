@@ -12,14 +12,14 @@
 int main(int argc, char **argv) {
     // Diagnostics work on headless Linux VMs and do not require a display server.
     QCoreApplication::setApplicationName("iVivid");
-    QCoreApplication::setApplicationVersion("1.0.0-beta.1");
+    QCoreApplication::setApplicationVersion("1.1.0-beta.1");
     const QStringList args = [&] {
         QStringList result;
         for (int i = 1; i < argc; ++i) result << QString::fromLocal8Bit(argv[i]);
         return result;
     }();
     if (args.contains("--version")) {
-        QTextStream(stdout) << "iVivid 1.0.0-beta.1\n";
+        QTextStream(stdout) << "iVivid 1.1.0-beta.1\n";
         return 0;
     }
     if (args.contains("--help")) {
@@ -28,7 +28,28 @@ int main(int argc, char **argv) {
                             << "  --help           Show this help\n"
                             << "  --check-config   Validate saved iVivid mpv settings\n"
                             << "  --print-config   Print current effective mpv settings\n"
-                            << "  --export-config FILE  Export effective settings atomically\n";
+                            << "  --export-config FILE  Export effective settings atomically\n"\n                            << "  --import-config FILE  Validate and atomically import settings\n";
+        return 0;
+    }
+    const int importIndex = args.indexOf("--import-config");
+    if (importIndex >= 0) {
+        if (args.size() != 2 || importIndex != 0 || args.at(1).startsWith("--")) {
+            QTextStream(stderr) << "iVivid: --import-config requires exactly one file path\n";
+            return 2;
+        }
+        const QString source = args.at(1);
+        if (QFileInfo(source).absoluteFilePath() == QFileInfo(ivivid::configPath()).absoluteFilePath()) {
+            QTextStream(stderr) << "iVivid: cannot import active settings onto themselves\n";
+            return 2;
+        }
+        ivivid::Settings imported;
+        QString error;
+        if (!ivivid::loadConfigFile(source, &imported, &error) ||
+            !ivivid::applyConfig(imported, &error)) {
+            QTextStream(stderr) << "iVivid import error: " << error << "\n";
+            return 2;
+        }
+        QTextStream(stdout) << "Imported iVivid settings\n";
         return 0;
     }
     const int exportIndex = args.indexOf("--export-config");
@@ -67,7 +88,7 @@ int main(int argc, char **argv) {
     }
     QApplication app(argc, argv);
     app.setApplicationName("iVivid");
-    app.setApplicationVersion("1.0.0-beta.1");
+    app.setApplicationVersion("1.1.0-beta.1");
     app.setOrganizationName("iVivid Contributors");
     MainWindow window;
     window.show();
