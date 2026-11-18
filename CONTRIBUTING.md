@@ -1,48 +1,28 @@
 # Contributing to iVivid
 
-Thanks for considering contributing!
+Thanks for improving iVivid, a community-driven Linux video enhancement configurator.
 
-## How to Contribute
+## Getting started
+Fork the repository, create a topic branch from the C++ development branch, and open a pull request. Use focused commits with clear explanations. Include test instructions, before/after behavior and screenshots for UI changes.
 
-1. Fork the repo
-2. Create a branch: `git checkout -b feature/my-feature`
-3. Commit: `git commit -m 'feat: add new shader option'`
-4. Push: `git push origin feature/my-feature`
-5. Open a Pull Request
+## Local development
+Install CMake 3.20+, a C++17 compiler, Qt 6 Widgets development packages, and mpv. Run:
 
-## Commit Messages
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+cmake --build build -j2
+ctest --test-dir build --output-on-failure
+./build/iVivid
+```
 
-Use Conventional Commits:
+## Quality expectations
+- Keep core logic testable without a graphical display.
+- Avoid writing user configuration without explicit user action.
+- Preserve existing settings, avoid elevated privileges and never collect personal data.
+- Prefer Qt APIs over shell commands.
+- Document compatibility, performance and regressions.
+- Do not claim benchmarks or tests ran unless they actually ran.
+- Use C++17 and follow existing formatting conventions.
+- Disclose dependencies, licenses and security implications.
 
-- `feat:` new feature (new shaders, presets, options)
-- `fix:` bug fix
-- `docs:` documentation only
-- `style:` formatting, no logic change
-- `refactor:` code change, no behavior change
-- `perf:` performance improvement
-- `test:` adding or updating tests
-- `chore:` build process, dependencies
-
-## PR Requirements
-
-- Self-reviewed code
-- Tested on at least one iGPU
-- No new pip dependencies (stdlib only)
-- No triple-quoted f-strings with backticks (paste-safe)
-- Documentation updated if user-facing change
-
-## Code Style
-
-- Python 3.8+
-- Max line length: 120
-- No external dependencies
-- Tkinter for GUI (stdlib)
-
-## Bug Reports
-
-Include:
-- iGPU model (`lspci | grep VGA`)
-- mpv version (`mpv --version`)
-- Python version
-- Steps to reproduce
-- Terminal output / traceback
+Open an issue for significant architectural changes before a large pull request. Contributors retain their copyright and license contributions under the repository's MIT license.

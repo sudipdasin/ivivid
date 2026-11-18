@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+config="${XDG_CONFIG_HOME:-$HOME/.config}/iVivid/mpv.conf"
+if [ ! -f "$config" ]; then
+  printf '%s\n' 'iVivid settings missing. Open iVivid and click Save settings first.' >&2
+  exit 1
+fi
+exec mpv "--include=$config" "$@"
