@@ -1,0 +1,39 @@
+name: iVivid cross-VM verification
+on:
+  push:
+    branches: ["beta/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ivivid-crossvm-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  linux-vm:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+        build: [Debug, Release]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake qt6-base-dev mpv ffmpeg xvfb xauth
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build }} -DBUILD_TESTING=ON
+      - name: Compile
+        run: cmake --build build --parallel 2
+      - name: Unit tests
+        run: ctest --test-dir build --output-on-failure
+      - name: Launcher tests
+        run: bash tests/launcher_tests.sh
+      - name: Real media decoding
+        run: bash tests/playback_smoke.sh
+      - name: Virtual display GUI smoke
+        run: |
+          timeout 5s xvfb-run -a -s "-screen 0 1280x800x24" ./build/iVivid > /tmp/ivivid-gui.log 2>&1 && code=0 || code=$?
+          cat /tmp/ivivid-gui.log
+          test "$code" -eq 124 || test "$code" -eq 0
