@@ -1,5 +1,7 @@
 #include "MainWindow.hpp"
 #include <QCheckBox>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QComboBox>
 #include <QFormLayout>
 #include <QFileDialog>
@@ -84,13 +86,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     preview->setObjectName("previewSettings");
     auto *apply = new QPushButton("Save settings", root);
     apply->setObjectName("saveSettings");
+    auto *copy = new QPushButton("Copy settings", root);
+    copy->setObjectName("copySettings");
     auto *reset = new QPushButton("Reset defaults", root);
     reset->setObjectName("resetDefaults");
     auto *play = new QPushButton("Test video…", root);
     play->setObjectName("testVideo");
     // Keep saveSettings as the stable automation identifier.
-    actions->addWidget(preview); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(play);
+    actions->addWidget(preview); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(play);
     layout->addLayout(actions);
+    connect(copy, &QPushButton::clicked, this, [this] {
+        QGuiApplication::clipboard()->setText(ivivid::renderMpv(settings()));
+        status_->setText("Enhancement settings copied to clipboard.");
+    });
     connect(reset, &QPushButton::clicked, this, [this] {
         const ivivid::Settings defaults;
         preset_->setCurrentIndex(defaults.preset);
