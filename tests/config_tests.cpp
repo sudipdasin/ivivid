@@ -5,6 +5,11 @@
 #include <QFile>
 #include <QTemporaryDir>
 int main() {
+    QTemporaryDir configRoot;
+    CHECK(configRoot.isValid());
+    CHECK(qputenv("XDG_CONFIG_HOME", configRoot.path().toUtf8()));
+    CHECK(ivivid::configPath() == configRoot.path() + "/iVivid/mpv.conf");
+
     ivivid::Settings s;
     CHECK(ivivid::validate(s).isEmpty());
     CHECK(ivivid::renderMpv(s).contains("hwdec=auto-safe"));
@@ -38,4 +43,10 @@ int main() {
     CHECK(ivivid::renderMpv(s).contains("hwdec=no"));
     s.deband = false;
     CHECK(ivivid::renderMpv(s).contains("deband=no"));
+    QString error;
+    CHECK(ivivid::applyConfig(s, &error));
+    QFile saved(ivivid::configPath());
+    CHECK(saved.open(QIODevice::ReadOnly));
+    CHECK(QString::fromUtf8(saved.readAll()) == ivivid::renderMpv(s));
+    CHECK(!QFile::exists(configRoot.path() + "/mpv/mpv.conf"));
 }
