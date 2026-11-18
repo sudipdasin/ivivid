@@ -84,11 +84,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     preview->setObjectName("previewSettings");
     auto *apply = new QPushButton("Save settings", root);
     apply->setObjectName("saveSettings");
+    auto *reset = new QPushButton("Reset defaults", root);
+    reset->setObjectName("resetDefaults");
     auto *play = new QPushButton("Test video…", root);
     play->setObjectName("testVideo");
     // Keep saveSettings as the stable automation identifier.
-    actions->addWidget(preview); actions->addWidget(apply); actions->addWidget(play);
+    actions->addWidget(preview); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(play);
     layout->addLayout(actions);
+    connect(reset, &QPushButton::clicked, this, [this] {
+        const ivivid::Settings defaults;
+        preset_->setCurrentIndex(defaults.preset);
+        saturation_->setValue(defaults.saturation);
+        brightness_->setValue(defaults.brightness);
+        contrast_->setValue(defaults.contrast);
+        bass_->setValue(defaults.bass);
+        treble_->setValue(defaults.treble);
+        hardware_->setChecked(defaults.hardwareDecode);
+        deband_->setChecked(defaults.deband);
+        normalize_->setChecked(defaults.normalize);
+        status_->setText("Default controls restored. Click Save settings to persist them.");
+    });
     connect(play, &QPushButton::clicked, this, [this] {
         const QString file = QFileDialog::getOpenFileName(this, "Choose a video to test", QString(),
             "Video files (*.mp4 *.mkv *.webm *.avi *.mov *.m4v);;All files (*)");
