@@ -5,10 +5,10 @@
 The public beta preview includes a Qt 6 GUI with separate **Video**, **Audio**, and **Experimental** tabs. Experimental features are opt-in and clearly marked.
 
 ## Install from the beta package (Ubuntu 24.04 / Debian-compatible)
-Download the `ivivid_0.2.0-beta.3_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
+Download the `ivivid_0.2.0-beta.4_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
 
 ```sh
-sudo apt install ./ivivid_0.2.0-beta.3_amd64.deb
+sudo apt install ./ivivid_0.2.0-beta.4_amd64.deb
 ```
 
 Open **iVivid** from your application menu or run `iVivid`.
@@ -34,6 +34,10 @@ ctest --test-dir build --output-on-failure
 ./build/iVivid
 ```
 For a source-tree playback test, use `scripts/ivivid-play /path/to/video.mp4`.
+
+## Verification
+
+CI includes real decoding of a synthetic video/audio file using mpv filters. See [testing](docs/TESTING.md) for reproduction and hardware-test gaps.
 
 ## Compatibility and limitations
 The packaged beta targets amd64 Ubuntu 24.04. Other Linux distributions should build from source. GPU acceleration depends on hardware, drivers and mpv; feature parity with the earlier Python implementation is incomplete. Audio filters may need tuning. No source media is modified.
