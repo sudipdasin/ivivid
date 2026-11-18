@@ -28,7 +28,8 @@ int main(int argc, char **argv) {
                             << "  --help           Show this help\n"
                             << "  --check-config   Validate saved iVivid mpv settings\n"
                             << "  --print-config   Print current effective mpv settings\n"
-                            << "  --export-config FILE  Export effective settings atomically\n"\n                            << "  --import-config FILE  Validate and atomically import settings\n";
+                            << "  --export-config FILE  Export effective settings atomically\n"
+                            << "  --import-config FILE  Validate and atomically import settings\n";
         return 0;
     }
     const int importIndex = args.indexOf("--import-config");
