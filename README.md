@@ -5,10 +5,10 @@
 The public beta preview includes a Qt 6 GUI with separate **Video**, **Audio**, and **Experimental** tabs. Experimental features are opt-in and clearly marked.
 
 ## Install from the beta package (Ubuntu 24.04 / Debian-compatible)
-Download the `ivivid_0.4.0-beta.1_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
+Download the `ivivid_0.5.0-beta.1_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
 
 ```sh
-sudo apt install ./ivivid_0.4.0-beta.1_amd64.deb
+sudo apt install ./ivivid_0.5.0-beta.1_amd64.deb
 ```
 
 Open **iVivid** from your application menu or run `iVivid`.
@@ -16,7 +16,7 @@ Open **iVivid** from your application menu or run `iVivid`.
 ## Test playback
 1. Select a preset in the **Video** tab.
 2. Adjust audio in **Audio** and optionally enable experimental processing in **Experimental**.
-3. Click **Preview settings**, then **Save settings**. Use **Reset defaults** to restore initial controls without changing the saved file until you save again. You can also click **Test video…** to select a local file and launch mpv.
+3. Click **Preview settings**, then **Save settings**. Use **Copy settings** to inspect or share the generated mpv configuration. Use **Reset defaults** to restore initial controls without changing the saved file until you save again. You can also click **Test video…** to select a local file and launch mpv.
 4. Play a local video:
    ```sh
    ivivid-play /path/to/video.mp4
