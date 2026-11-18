@@ -1,4 +1,10 @@
-## [0.2.0-beta.4] — 2026-11-18
+# v0.3.0-beta.1 (Linux beta preview)
+- Restore last saved video and audio enhancement controls at startup.
+- Validate persisted settings and reject malformed configurations without overwriting defaults.
+- Add VM-backed round-trip and malformed-configuration regression tests.
+- Retain Linux build, real mpv media playback, GUI interaction, and ASan/UBSan VM gates.
+
+## [0.3.0-beta.1] — 2026-11-18
 ### Testing
 - Decode generated video and audio through mpv with video and audio enhancement settings
 - Verify loudness normalization independently
