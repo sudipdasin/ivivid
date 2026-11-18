@@ -1,3 +1,10 @@
+## [0.2.0-beta.4] — 2026-11-18
+### Testing
+- Decode generated video and audio through mpv with video and audio enhancement settings
+- Verify loudness normalization independently
+- Ensure C++ config assertions execute in Release builds
+- Document reproducible test procedure and hardware-validation gaps
+
 # Changelog
 
 All notable changes to iVivid are documented here.
