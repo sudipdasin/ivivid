@@ -39,7 +39,7 @@ jobs:
         run: bash packaging/build-deb.sh
       - name: Install and smoke-test Debian package
         run: |
-          sudo apt-get install -y ./dist/ivivid_0.2.0-beta.2_amd64.deb
+          sudo apt-get install -y ./dist/ivivid_0.2.0-beta.3_amd64.deb
           command -v iVivid
           command -v ivivid-play
           test -f /usr/share/applications/iVivid.desktop
@@ -58,16 +58,16 @@ jobs:
           path: dist/*
           if-no-files-found: error
       - name: Publish prerelease assets (successful branch build only)
-        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/beta/cpp-preview-0.2.0'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/beta/cpp-preview-0.2.0'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="v0.2.0-beta.2"
+          tag="v0.2.0-beta.3"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release already exists; uploading rebuilt assets"
             gh release upload "$tag" dist/* --clobber
           else
             gh release create "$tag" dist/* --target "$GITHUB_SHA" --prerelease \
-              --title "iVivid v0.2.0-beta.2 — Linux public test preview" \
+              --title "iVivid v0.2.0-beta.3 — Linux public test preview" \
               --notes "Experimental public beta for Ubuntu 24.04 amd64. Includes C++/Qt GUI, Video, Audio and Experimental tabs, isolated mpv settings, and ivivid-play launcher. Hardware compatibility is not yet fully verified. See README for installation and known limitations."
           fi
