@@ -3,7 +3,7 @@
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
     app.setApplicationName("iVivid");
-    app.setApplicationVersion("0.3.0-beta.1");
+    app.setApplicationVersion("0.4.0-beta.1");
     app.setOrganizationName("iVivid Contributors");
     MainWindow window;
     window.show();
