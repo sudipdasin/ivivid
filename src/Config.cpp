@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QSaveFile>
+#include <QStandardPaths>
 #include <QStringList>
 namespace ivivid {
 QString validate(const Settings &s) {
@@ -18,7 +19,7 @@ QString renderMpv(const Settings &s) {
     output += "scale=" + QString(s.preset == 0 ? "bilinear" : "ewa_lanczossharp") + "\n";
     output += "cscale=" + QString(s.preset == 2 ? "ewa_lanczossharp" : "bilinear") + "\n";
     output += "deband=" + QString(s.deband ? "yes" : "no") + "\n";
-    // mpv saturation is a percentage-like adjustment: 0 is neutral, 100 is maximum.
+    // mpv saturation adjustment is -100..100, where 0 is neutral.
     output += "saturation=" + QString::number(s.saturation - 100) + "\n";
     output += "brightness=" + QString::number(s.brightness) + "\n";
     output += "contrast=" + QString::number(s.contrast) + "\n";
@@ -30,7 +31,7 @@ QString renderMpv(const Settings &s) {
     return output;
 }
 QString configPath() {
-    return QDir::homePath() + "/.config/iVivid/mpv.conf";
+    return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/iVivid/mpv.conf";
 }
 bool applyConfig(const Settings &s, QString *error) {
     const auto invalid = validate(s);
