@@ -1,0 +1,31 @@
+version: 2.1
+parameters:
+  auto_main_checks:
+    type: boolean
+    default: true
+  run_manual_checks:
+    type: boolean
+    default: false
+
+# Free-tier CPU-only syntax smoke test; do not launch the Tkinter GUI or alter mpv configuration.
+jobs:
+  python-syntax:
+    docker:
+      - image: cimg/python:3.12
+    resource_class: small
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run:
+          name: Compile tracked iVivid Python source
+          command: python -m py_compile iVivid.py
+
+workflows:
+  ivivid-ci:
+    # CI_MASTER_TOGGLE: managed by scripts/ci-master-toggle.py
+    when: << pipeline.parameters.auto_main_checks >>
+    jobs:
+      - python-syntax:
+          filters:
+            branches:
+              only: main
