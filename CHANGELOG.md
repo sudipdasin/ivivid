@@ -1,49 +1,53 @@
-# v1.1.3-beta.1
+# v1.1.4-beta.1
+- Correct shell regression fixtures to emit actual malformed UTF-8 and embedded NUL bytes.
+- Ensure oversized input fixture uses a literal NUL translation, exercising bounded import parsing.
+
+# v1.1.4-beta.1
 - Reject malformed UTF-8 and embedded NUL bytes in imported profiles.
 - Add regression coverage verifying invalid text imports preserve active settings.
 
-# v1.1.3-beta.1
+# v1.1.4-beta.1
 - Reject imported profiles exceeding 64 KiB before parsing.
 - Regression-test oversized imports and ensure existing settings remain unchanged.
 
-# v1.1.3-beta.1
+# v1.1.4-beta.1
 - Harden profile imports: reject unknown mpv directives and duplicate keys instead of silently ignoring them.
 - Add CLI regression tests confirming invalid imports preserve active settings.
 
-# v1.1.3-beta.1
+# v1.1.4-beta.1
 - Add CLI profile import with strict validation and atomic installation.
 - Preserve active settings when imported files are missing or invalid.
 - Add VM integration tests for import/export roundtrip and rollback.
 
-# v1.1.3-beta.1 (major-version Linux beta preview)
+# v1.1.4-beta.1 (major-version Linux beta preview)
 - Add atomic headless export of effective mpv settings to an explicit file path.
 - Prevent export from overwriting active iVivid settings and reject invalid CLI arguments.
 - Add export integration tests across Ubuntu VM matrix and sanitizers.
 - Major beta milestone; not a production-stable release or a hardware GPU validation claim.
 
-# v1.1.3-beta.1 (Linux beta preview)
+# v1.1.4-beta.1 (Linux beta preview)
 - Add display-independent CLI diagnostics: --version, --help, --check-config, --print-config.
 - Validate malformed saved settings with explicit nonzero exit status and stderr diagnostics.
 - Add isolated XDG CLI integration tests to every Linux VM CTest configuration.
 - Retain clipboard export, persistent settings and reset controls.
 
-# v1.1.3-beta.1 (Linux beta preview)
+# v1.1.4-beta.1 (Linux beta preview)
 - Add Copy settings to export the exact generated mpv configuration to the desktop clipboard.
 - Verify clipboard output and no filesystem writes before Save using Qt GUI tests in Linux VMs.
 - Retain persistent preferences, non-destructive Reset defaults, and isolated mpv configuration.
 
-# v1.1.3-beta.1 (Linux beta preview)
+# v1.1.4-beta.1 (Linux beta preview)
 - Add one-click Reset defaults without silently overwriting saved preferences.
 - Verify GUI persistence across windows and reset/save behavior using VM-driven Qt tests.
 - Preserve isolated mpv configuration and backward-compatible loading.
 
-# v1.1.3-beta.1 (Linux beta preview)
+# v1.1.4-beta.1 (Linux beta preview)
 - Restore last saved video and audio enhancement controls at startup.
 - Validate persisted settings and reject malformed configurations without overwriting defaults.
 - Add VM-backed round-trip and malformed-configuration regression tests.
 - Retain Linux build, real mpv media playback, GUI interaction, and ASan/UBSan VM gates.
 
-## [1.1.3-beta.1] — 2026-11-18
+## [1.1.4-beta.1] — 2026-11-18
 ### Testing
 - Decode generated video and audio through mpv with video and audio enhancement settings
 - Verify loudness normalization independently
