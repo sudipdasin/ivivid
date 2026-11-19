@@ -50,7 +50,20 @@ bool loadConfigFile(const QString &path, Settings *settings, QString *error) {
         if (line.isEmpty() || line.startsWith('#')) continue;
         const qsizetype pos = line.indexOf('=');
         if (pos < 1) { if (error) *error = "Malformed configuration line"; return false; }
-        values.insert(line.left(pos).trimmed(), line.mid(pos + 1).trimmed());
+        const QString key = line.left(pos).trimmed();
+        static const QStringList allowed = {
+            "hwdec", "scale", "cscale", "deband", "saturation",
+            "brightness", "contrast", "af"
+        };
+        if (!allowed.contains(key)) {
+            if (error) *error = "Unknown configuration option: " + key;
+            return false;
+        }
+        if (values.contains(key)) {
+            if (error) *error = "Duplicate configuration option: " + key;
+            return false;
+        }
+        values.insert(key, line.mid(pos + 1).trimmed());
     }
     Settings next;
     const auto number = [&](const QString &key, int *out, int offset = 0) -> bool {
