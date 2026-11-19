@@ -43,7 +43,18 @@ bool loadConfigFile(const QString &path, Settings *settings, QString *error) {
         if (error) *error = file.errorString();
         return false;
     }
-    const QString data = QString::fromUtf8(file.readAll());
+    // Imported profiles are small text files; cap size before allocating or parsing.
+    constexpr qint64 maxProfileBytes = 64 * 1024;
+    if (file.size() > maxProfileBytes) {
+        if (error) *error = "Configuration exceeds 64 KiB limit";
+        return false;
+    }
+    const QByteArray bytes = file.read(maxProfileBytes + 1);
+    if (bytes.size() > maxProfileBytes) {
+        if (error) *error = "Configuration exceeds 64 KiB limit";
+        return false;
+    }
+    const QString data = QString::fromUtf8(bytes);
     QMap<QString, QString> values;
     for (const QString &raw : data.split('\n')) {
         const QString line = raw.trimmed();
