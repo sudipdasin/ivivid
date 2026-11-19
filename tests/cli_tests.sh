@@ -4,7 +4,7 @@ app="${1:?path to iVivid binary required}"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 export XDG_CONFIG_HOME="$tmp"
-"$app" --version | grep -Fx 'iVivid 1.1.1-beta.1'
+"$app" --version | grep -Fx 'iVivid 1.1.2-beta.1'
 "$app" --help | grep -F -- '--check-config'
 "$app" --check-config | grep -Fx 'iVivid configuration valid'
 "$app" --print-config | grep -Fx 'saturation=10'
@@ -38,6 +38,8 @@ if "$app" --import-config "$tmp/unknown.conf"; then exit 1; fi
 printf 'saturation=10\nsaturation=20\n' > "$tmp/duplicate.conf"
 if "$app" --import-config "$tmp/duplicate.conf"; then exit 1; fi
 if "$app" --import-config "$tmp/iVivid/mpv.conf"; then exit 1; fi
+head -c 70000 /dev/zero | tr '\\0' 'x' > "$tmp/oversized.conf"
+if "$app" --import-config "$tmp/oversized.conf"; then exit 1; fi
 cmp "$tmp/iVivid/mpv.conf" "$tmp/before.conf"
 \printf 'saturation=invalid\n' > "$tmp/iVivid/mpv.conf"
 if "$app" --check-config > "$tmp/out" 2> "$tmp/err"; then
