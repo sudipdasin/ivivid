@@ -9,17 +9,27 @@
 #include <QTextStream>
 #include <QStringList>
 
+static bool sameConfigFile(const QString &candidate) {
+    const QFileInfo source(candidate);
+    const QFileInfo active(ivivid::configPath());
+    if (source.absoluteFilePath() == active.absoluteFilePath()) return true;
+    const QString canonicalSource = source.canonicalFilePath();
+    const QString canonicalActive = active.canonicalFilePath();
+    return !canonicalSource.isEmpty() && !canonicalActive.isEmpty() &&
+           canonicalSource == canonicalActive;
+}
+
 int main(int argc, char **argv) {
     // Diagnostics work on headless Linux VMs and do not require a display server.
     QCoreApplication::setApplicationName("iVivid");
-    QCoreApplication::setApplicationVersion("1.1.4-beta.1");
+    QCoreApplication::setApplicationVersion("1.1.5-beta.1");
     const QStringList args = [&] {
         QStringList result;
         for (int i = 1; i < argc; ++i) result << QString::fromLocal8Bit(argv[i]);
         return result;
     }();
     if (args.contains("--version")) {
-        QTextStream(stdout) << "iVivid 1.1.4-beta.1\n";
+        QTextStream(stdout) << "iVivid 1.1.5-beta.1\n";
         return 0;
     }
     if (args.contains("--help")) {
@@ -39,7 +49,7 @@ int main(int argc, char **argv) {
             return 2;
         }
         const QString source = args.at(1);
-        if (QFileInfo(source).absoluteFilePath() == QFileInfo(ivivid::configPath()).absoluteFilePath()) {
+        if (sameConfigFile(source)) {
             QTextStream(stderr) << "iVivid: cannot import active settings onto themselves\n";
             return 2;
         }
@@ -67,7 +77,7 @@ int main(int argc, char **argv) {
         }
         if (exportIndex >= 0) {
             const QString path = args.at(exportIndex + 1);
-            if (QFileInfo(path).absoluteFilePath() == QFileInfo(ivivid::configPath()).absoluteFilePath()) {
+            if (sameConfigFile(path)) {
                 QTextStream(stderr) << "iVivid: export destination cannot overwrite active settings\n";
                 return 2;
             }
@@ -89,7 +99,7 @@ int main(int argc, char **argv) {
     }
     QApplication app(argc, argv);
     app.setApplicationName("iVivid");
-    app.setApplicationVersion("1.1.4-beta.1");
+    app.setApplicationVersion("1.1.5-beta.1");
     app.setOrganizationName("iVivid Contributors");
     MainWindow window;
     window.show();
