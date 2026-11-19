@@ -56,7 +56,7 @@ bool loadConfigFile(const QString &path, Settings *settings, QString *error) {
     }
     // Reject malformed UTF-8 and embedded NUL rather than silently repairing input.
     const QString data = QString::fromUtf8(bytes);
-    if (data.toUtf8() != bytes || bytes.contains('\\0')) {
+    if (data.toUtf8() != bytes || bytes.contains(char(0))) {
         if (error) *error = "Configuration must be valid UTF-8 text without NUL bytes";
         return false;
     }
