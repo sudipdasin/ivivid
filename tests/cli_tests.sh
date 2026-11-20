@@ -4,7 +4,7 @@ app="${1:?path to iVivid binary required}"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 export XDG_CONFIG_HOME="$tmp"
-"$app" --version | grep -Fx 'iVivid 1.1.5-beta.1'
+"$app" --version | grep -Fx 'iVivid 1.1.6-beta.1'
 "$app" --help | grep -F -- '--check-config'
 "$app" --check-config | grep -Fx 'iVivid configuration valid'
 "$app" --print-config | grep -Fx 'saturation=10'
@@ -25,6 +25,11 @@ if "$app" --export-config; then
   exit 1
 fi
 test -s "$tmp/export.conf"
+# Reject unexpected flags and operands instead of silently ignoring them.
+if "$app" --export-config "$tmp/extra.conf" --unknown; then exit 1; fi
+test ! -e "$tmp/extra.conf"
+if "$app" --check-config --unknown; then exit 1; fi
+if "$app" --print-config --check-config; then exit 1; fi
 # Round-trip import and verify rejected imports never change saved settings.
 printf 'saturation=50\n' > "$tmp/iVivid/mpv.conf"
 "$app" --import-config "$tmp/export.conf"

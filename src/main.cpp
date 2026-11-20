@@ -22,14 +22,14 @@ static bool sameConfigFile(const QString &candidate) {
 int main(int argc, char **argv) {
     // Diagnostics work on headless Linux VMs and do not require a display server.
     QCoreApplication::setApplicationName("iVivid");
-    QCoreApplication::setApplicationVersion("1.1.5-beta.1");
+    QCoreApplication::setApplicationVersion("1.1.6-beta.1");
     const QStringList args = [&] {
         QStringList result;
         for (int i = 1; i < argc; ++i) result << QString::fromLocal8Bit(argv[i]);
         return result;
     }();
     if (args.contains("--version")) {
-        QTextStream(stdout) << "iVivid 1.1.5-beta.1\n";
+        QTextStream(stdout) << "iVivid 1.1.6-beta.1\n";
         return 0;
     }
     if (args.contains("--help")) {
@@ -64,11 +64,11 @@ int main(int argc, char **argv) {
         return 0;
     }
     const int exportIndex = args.indexOf("--export-config");
-    if (exportIndex >= 0 && (exportIndex + 1 >= args.size() || args.at(exportIndex + 1).startsWith("--"))) {
+    if (exportIndex >= 0 && (args.size() != 2 || exportIndex != 0 || args.at(1).startsWith("--"))) {
         QTextStream(stderr) << "iVivid: --export-config requires a file path\n";
         return 2;
     }
-    if (args.contains("--check-config") || args.contains("--print-config") || exportIndex >= 0) {
+    if (args.contains("--check-config") || args.contains("--print-config") || exportIndex >= 0) {\n        if (exportIndex < 0 && (args.size() != 1 ||\n            (args.at(0) != "--check-config" && args.at(0) != "--print-config"))) {\n            QTextStream(stderr) << "iVivid: diagnostic options cannot be combined with other arguments\n";\n            return 2;\n        }
         ivivid::Settings settings;
         QString error;
         if (!ivivid::loadConfig(&settings, &error)) {
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
     }
     QApplication app(argc, argv);
     app.setApplicationName("iVivid");
-    app.setApplicationVersion("1.1.5-beta.1");
+    app.setApplicationVersion("1.1.6-beta.1");
     app.setOrganizationName("iVivid Contributors");
     MainWindow window;
     window.show();
