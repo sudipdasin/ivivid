@@ -4,7 +4,7 @@ app="${1:?path to iVivid binary required}"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 export XDG_CONFIG_HOME="$tmp"
-"$app" --version | grep -Fx 'iVivid 1.1.7-beta.1'
+"$app" --version | grep -Fx 'iVivid 1.2.0-beta.1'
 "$app" --help | grep -F -- '--check-config'
 if "$app" --version --unknown; then exit 1; fi
 if "$app" --help --export-config "$tmp/unexpected.conf"; then exit 1; fi
@@ -56,6 +56,13 @@ printf 'saturation=10\n\377\n' > "$tmp/invalid-utf8.conf"
 if "$app" --import-config "$tmp/invalid-utf8.conf"; then exit 1; fi
 printf 'saturation=10\000\n' > "$tmp/nul.conf"
 if "$app" --import-config "$tmp/nul.conf"; then exit 1; fi
+# Reject duplicate audio filter stages and preserve the active configuration.
+printf 'af=lavfi=[equalizer=f=100:t=h:w=200:g=5],lavfi=[equalizer=f=100:t=h:w=200:g=8]\n' > "$tmp/duplicate-bass.conf"
+if "$app" --import-config "$tmp/duplicate-bass.conf"; then exit 1; fi
+printf 'af=lavfi=[equalizer=f=6000:t=h:w=200:g=5],lavfi=[equalizer=f=6000:t=h:w=200:g=8]\n' > "$tmp/duplicate-treble.conf"
+if "$app" --import-config "$tmp/duplicate-treble.conf"; then exit 1; fi
+printf 'af=lavfi=[loudnorm=I=-16:TP=-1.5:LRA=11],lavfi=[loudnorm=I=-16:TP=-1.5:LRA=11]\n' > "$tmp/duplicate-normalize.conf"
+if "$app" --import-config "$tmp/duplicate-normalize.conf"; then exit 1; fi
 cmp "$tmp/iVivid/mpv.conf" "$tmp/before.conf"
 \printf 'saturation=invalid\n' > "$tmp/iVivid/mpv.conf"
 if "$app" --check-config > "$tmp/out" 2> "$tmp/err"; then

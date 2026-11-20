@@ -44,7 +44,7 @@ jobs:
         run: bash packaging/build-deb.sh
       - name: Install and smoke-test Debian package
         run: |
-          sudo apt-get install -y ./dist/ivivid_1.1.7-beta.1_amd64.deb
+          sudo apt-get install -y ./dist/ivivid_1.2.0-beta.1_amd64.deb
           command -v iVivid
           command -v ivivid-play
           test -f /usr/share/applications/iVivid.desktop
@@ -71,13 +71,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          tag="v1.1.7-beta.1"
+          tag="v1.2.0-beta.1"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release already exists; not replacing immutable tested assets."
             exit 0
           fi
           if gh release create "$tag" dist/* --target "$GITHUB_SHA" --prerelease \
-            --title "iVivid v1.1.7-beta.1 — Linux test preview" \
+            --title "iVivid v1.2.0-beta.1 — Linux test preview" \
             --notes "Ubuntu 24.04 amd64 test preview. Validated by CI: C++ tests, synthetic mpv video/audio decoding, package installation and virtual-display GUI startup. Hardware GPU/HDR behavior remains unverified."; then
             echo "Release published."
           else

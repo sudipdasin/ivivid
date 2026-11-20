@@ -112,21 +112,31 @@ bool loadConfigFile(const QString &path, Settings *settings, QString *error) {
     }
     next.deband = deband == "yes";
     const QString filters = values.value("af");
-    next.normalize = filters.contains("lavfi=[loudnorm=I=-16:TP=-1.5:LRA=11]");
+    bool seenBass = false;
+    bool seenTreble = false;
+    bool seenNormalize = false;
     for (const auto &part : filters.split(',', Qt::SkipEmptyParts)) {
         if (part.startsWith("lavfi=[equalizer=f=100:t=h:w=200:g=") && part.endsWith(']')) {
+            if (seenBass) { if (error) *error = "Duplicate bass filter"; return false; }
+            seenBass = true;
             bool ok = false;
             next.bass = part.mid(QString("lavfi=[equalizer=f=100:t=h:w=200:g=").size()).chopped(1).toInt(&ok);
             if (!ok) { if (error) *error = "Invalid bass filter"; return false; }
         } else if (part.startsWith("lavfi=[equalizer=f=6000:t=h:w=200:g=") && part.endsWith(']')) {
+            if (seenTreble) { if (error) *error = "Duplicate treble filter"; return false; }
+            seenTreble = true;
             bool ok = false;
             next.treble = part.mid(QString("lavfi=[equalizer=f=6000:t=h:w=200:g=").size()).chopped(1).toInt(&ok);
             if (!ok) { if (error) *error = "Invalid treble filter"; return false; }
-        } else if (part != "lavfi=[loudnorm=I=-16:TP=-1.5:LRA=11]") {
+        } else if (part == "lavfi=[loudnorm=I=-16:TP=-1.5:LRA=11]") {
+            if (seenNormalize) { if (error) *error = "Duplicate normalization filter"; return false; }
+            seenNormalize = true;
+        } else {
             if (error) *error = "Unknown audio filter";
             return false;
         }
     }
+    next.normalize = seenNormalize;
     const QString invalid = validate(next);
     if (!invalid.isEmpty()) { if (error) *error = invalid; return false; }
     *settings = next;

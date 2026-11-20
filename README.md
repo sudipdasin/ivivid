@@ -5,10 +5,10 @@
 The public beta preview includes a Qt 6 GUI with separate **Video**, **Audio**, and **Experimental** tabs. Experimental features are opt-in and clearly marked.
 
 ## Install from the beta package (Ubuntu 24.04 / Debian-compatible)
-Download the `ivivid_1.1.7-beta.1_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
+Download the `ivivid_1.2.0-beta.1_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
 
 ```sh
-sudo apt install ./ivivid_1.1.7-beta.1_amd64.deb
+sudo apt install ./ivivid_1.2.0-beta.1_amd64.deb
 ```
 
 Open **iVivid** from your application menu or run `iVivid`.
