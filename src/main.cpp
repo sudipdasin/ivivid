@@ -22,14 +22,22 @@ static bool sameConfigFile(const QString &candidate) {
 int main(int argc, char **argv) {
     // Diagnostics work on headless Linux VMs and do not require a display server.
     QCoreApplication::setApplicationName("iVivid");
-    QCoreApplication::setApplicationVersion("1.1.6-beta.1");
+    QCoreApplication::setApplicationVersion("1.1.7-beta.1");
     const QStringList args = [&] {
         QStringList result;
         for (int i = 1; i < argc; ++i) result << QString::fromLocal8Bit(argv[i]);
         return result;
     }();
+    if (args.contains("--version") && args.size() != 1) {
+        QTextStream(stderr) << "iVivid: --version cannot be combined with other arguments\n";
+        return 2;
+    }
+    if (args.contains("--help") && args.size() != 1) {
+        QTextStream(stderr) << "iVivid: --help cannot be combined with other arguments\n";
+        return 2;
+    }
     if (args.contains("--version")) {
-        QTextStream(stdout) << "iVivid 1.1.6-beta.1\n";
+        QTextStream(stdout) << "iVivid 1.1.7-beta.1\n";
         return 0;
     }
     if (args.contains("--help")) {
@@ -104,7 +112,7 @@ int main(int argc, char **argv) {
     }
     QApplication app(argc, argv);
     app.setApplicationName("iVivid");
-    app.setApplicationVersion("1.1.6-beta.1");
+    app.setApplicationVersion("1.1.7-beta.1");
     app.setOrganizationName("iVivid Contributors");
     MainWindow window;
     window.show();
