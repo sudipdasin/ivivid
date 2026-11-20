@@ -68,7 +68,12 @@ int main(int argc, char **argv) {
         QTextStream(stderr) << "iVivid: --export-config requires a file path\n";
         return 2;
     }
-    if (args.contains("--check-config") || args.contains("--print-config") || exportIndex >= 0) {\n        if (exportIndex < 0 && (args.size() != 1 ||\n            (args.at(0) != "--check-config" && args.at(0) != "--print-config"))) {\n            QTextStream(stderr) << "iVivid: diagnostic options cannot be combined with other arguments\n";\n            return 2;\n        }
+    if (args.contains("--check-config") || args.contains("--print-config") || exportIndex >= 0) {
+        if (exportIndex < 0 && (args.size() != 1 ||
+            (args.at(0) != "--check-config" && args.at(0) != "--print-config"))) {
+            QTextStream(stderr) << "iVivid: diagnostic options cannot be combined with other arguments\n";
+            return 2;
+        }
         ivivid::Settings settings;
         QString error;
         if (!ivivid::loadConfig(&settings, &error)) {
