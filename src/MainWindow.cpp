@@ -20,6 +20,9 @@
 #include <QSysInfo>
 #include <QLibraryInfo>
 #include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle("iVivid — Video Enhancement");
     resize(760, 630);
@@ -93,6 +96,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     copy->setObjectName("copySettings");
     auto *reset = new QPushButton("Reset defaults", root);
     reset->setObjectName("resetDefaults");
+    auto *inspect = new QPushButton("Inspect media…", root);
+    inspect->setObjectName("inspectMedia");
+    inspect->setToolTip("Inspect local video/audio metadata with ffprobe, without changing the file.");
     auto *diagnostics = new QPushButton("System diagnostics", root);
     diagnostics->setObjectName("systemDiagnostics");
     auto *compare = new QPushButton("Compare original…", root);
@@ -101,7 +107,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *play = new QPushButton("Test video…", root);
     play->setObjectName("testVideo");
     // Keep saveSettings as the stable automation identifier.
-    actions->addWidget(preview); actions->addWidget(diagnostics); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(compare); actions->addWidget(play);
+    actions->addWidget(preview); actions->addWidget(inspect); actions->addWidget(diagnostics); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(compare); actions->addWidget(play);
     layout->addLayout(actions);
     connect(copy, &QPushButton::clicked, this, [this] {
         QGuiApplication::clipboard()->setText(ivivid::renderMpv(settings()));
@@ -119,6 +125,48 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         deband_->setChecked(defaults.deband);
         normalize_->setChecked(defaults.normalize);
         status_->setText("Default controls restored. Click Save settings to persist them.");
+    });
+    connect(inspect, &QPushButton::clicked, this, [this] {
+        const QString file = QFileDialog::getOpenFileName(this, "Inspect local media", QString(),
+            "Media files (*.mp4 *.mkv *.webm *.avi *.mov *.m4v *.mp3 *.flac *.wav *.ogg);;All files (*)");
+        if (file.isEmpty()) return;
+        const QString probe = QStandardPaths::findExecutable("ffprobe");
+        if (probe.isEmpty()) {
+            QMessageBox::warning(this, "ffprobe unavailable", "Install ffmpeg to inspect media metadata.");
+            return;
+        }
+        QProcess process;
+        process.start(probe, {"-v", "error", "-show_entries", "format=duration,size:stream=codec_type,codec_name,width,height", "-of", "json", "--", file});
+        if (!process.waitForStarted(3000) || !process.waitForFinished(10000)) {
+            process.kill(); process.waitForFinished(1000);
+            QMessageBox::warning(this, "Inspection timed out", "ffprobe could not inspect this file within 10 seconds.");
+            return;
+        }
+        if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
+            QMessageBox::warning(this, "Inspection failed", "ffprobe could not read metadata for this file.");
+            return;
+        }
+        QJsonParseError parseError;
+        const QJsonDocument doc = QJsonDocument::fromJson(process.readAllStandardOutput(), &parseError);
+        if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+            QMessageBox::warning(this, "Inspection failed", "ffprobe returned invalid metadata.");
+            return;
+        }
+        const QJsonObject data = doc.object();
+        const QJsonObject format = data.value("format").toObject();
+        QStringList lines;
+        lines << "File: " + QFileInfo(file).fileName();
+        lines << "Duration (seconds): " + format.value("duration").toString("unknown");
+        lines << "Size (bytes): " + format.value("size").toString("unknown");
+        for (const QJsonValue &entry : data.value("streams").toArray()) {
+            const QJsonObject stream = entry.toObject();
+            QString description = stream.value("codec_type").toString("stream") + ": " + stream.value("codec_name").toString("unknown");
+            if (stream.contains("width") && stream.contains("height"))
+                description += QString(" (%1 x %2)").arg(stream.value("width").toInt()).arg(stream.value("height").toInt());
+            lines << description;
+        }
+        QMessageBox::information(this, "Local media inspection", lines.join("\\n"));
+        status_->setText("Inspected metadata: " + QFileInfo(file).fileName());
     });
     connect(diagnostics, &QPushButton::clicked, this, [this] {
         const QString mpv = QStandardPaths::findExecutable("mpv");

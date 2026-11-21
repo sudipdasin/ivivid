@@ -5,10 +5,10 @@
 The public beta preview includes a Qt 6 GUI with separate **Video**, **Audio**, and **Experimental** tabs. Experimental features are opt-in and clearly marked.
 
 ## Install from the beta package (Ubuntu 24.04 / Debian-compatible)
-Download the `ivivid_2.1.0-beta.1_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
+Download the `ivivid_2.2.0-beta.1_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
 
 ```sh
-sudo apt install ./ivivid_2.1.0-beta.1_amd64.deb
+sudo apt install ./ivivid_2.2.0-beta.1_amd64.deb
 ```
 
 Open **iVivid** from your application menu or run `iVivid`.
@@ -50,7 +50,7 @@ See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [release p
 
 
 ### Downloadable Linux ZIP bundle
-The GitHub Releases page also offers `ivivid-2.1.0-beta.1-linux-amd64.zip`, containing the compiled `bin/iVivid` executable and launcher. It requires host Qt6 Widgets and mpv; it is **not** a fully self-contained AppImage. The Debian `.deb` remains recommended for Ubuntu/Debian systems.
+The GitHub Releases page also offers `ivivid-2.2.0-beta.1-linux-amd64.zip`, containing the compiled `bin/iVivid` executable and launcher. It requires host Qt6 Widgets and mpv; it is **not** a fully self-contained AppImage. The Debian `.deb` remains recommended for Ubuntu/Debian systems.
 
 
 ### Compare original playback (v2 beta)
@@ -59,3 +59,7 @@ Use **Compare original…** to launch mpv with `--no-config`, bypassing iVivid e
 
 ### System diagnostics (v2.1 beta)
 The GUI includes a **System diagnostics** button displaying the detected operating system, CPU architecture, Qt runtime version, mpv executable path, and iVivid configuration location and existence. This is a local read-only report; it does not probe GPU acceleration or upload data.
+
+
+### Inspect media metadata (v2.2 beta)
+Click **Inspect media…** to view local media duration, file size, codec names, and video resolution using `ffprobe` (from FFmpeg). The operation is read-only, has a ten-second timeout, and displays metadata locally. It does not decode, edit, or upload media.
