@@ -1,6 +1,7 @@
 #include "../src/MainWindow.hpp"
 #include "../src/Config.hpp"
 #include <QApplication>
+#include <QKeySequence>
 #include <QCheckBox>
 #include <QClipboard>
 #include <QGuiApplication>
@@ -37,6 +38,8 @@ int main(int argc, char **argv) {
     auto *importPreset = window.findChild<QPushButton *>("importPreset");
     auto *exportPreset = window.findChild<QPushButton *>("exportPreset");
     CHECK(importPreset && exportPreset);
+    CHECK(window.width() >= 720);
+    CHECK(window.findChild<QPushButton *>("saveSettings")->shortcut() == QKeySequence::Save);
     auto *inspect = window.findChild<QPushButton *>("inspectMedia");
     auto *diagnostics = window.findChild<QPushButton *>("systemDiagnostics");
     auto *compare = window.findChild<QPushButton *>("compareOriginal");

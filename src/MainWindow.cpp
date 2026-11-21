@@ -24,12 +24,15 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QSaveFile>
+#include <QShortcut>
+#include <QKeySequence>
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle("iVivid — Video Enhancement");
-    resize(760, 630);
+    resize(1020, 700);
+    setMinimumSize(720, 580);
     auto *root = new QWidget(this);
     auto *layout = new QVBoxLayout(root);
-    layout->setContentsMargins(24, 24, 24, 24);
+    layout->setContentsMargins(18, 18, 18, 18);
     layout->setSpacing(14);
     auto *title = new QLabel("iVivid", root);
     title->setObjectName("appTitle");
@@ -88,7 +91,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         ? "mpv not found in PATH. Install mpv before testing playback."
         : "mpv detected. iVivid settings are stored separately from your normal mpv.conf.");
     layout->addWidget(status_);
-    auto *actions = new QHBoxLayout();
+    auto *actions = new QVBoxLayout();
+    auto *presetActions = new QHBoxLayout();
+    auto *toolActions = new QHBoxLayout();
+    auto *playbackActions = new QHBoxLayout();
     auto *preview = new QPushButton("Preview settings", root);
     preview->setObjectName("previewSettings");
     auto *apply = new QPushButton("Save settings", root);
@@ -112,7 +118,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *play = new QPushButton("Test video…", root);
     play->setObjectName("testVideo");
     // Keep saveSettings as the stable automation identifier.
-    actions->addWidget(preview); actions->addWidget(importPreset); actions->addWidget(exportPreset); actions->addWidget(inspect); actions->addWidget(diagnostics); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(compare); actions->addWidget(play);
+    presetActions->addWidget(importPreset); presetActions->addWidget(exportPreset); presetActions->addWidget(copy); presetActions->addWidget(reset);
+    toolActions->addWidget(preview); toolActions->addWidget(inspect); toolActions->addWidget(diagnostics);
+    playbackActions->addWidget(compare); playbackActions->addWidget(play); playbackActions->addWidget(apply);
+    actions->addLayout(presetActions); actions->addLayout(toolActions); actions->addLayout(playbackActions);
+    apply->setShortcut(QKeySequence::Save);
+    preview->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_P));
+    importPreset->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
     layout->addLayout(actions);
     connect(copy, &QPushButton::clicked, this, [this] {
         QGuiApplication::clipboard()->setText(ivivid::renderMpv(settings()));
