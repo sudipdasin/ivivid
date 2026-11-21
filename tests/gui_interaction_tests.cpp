@@ -34,6 +34,8 @@ int main(int argc, char **argv) {
     auto *normalize = window.findChild<QCheckBox *>("normalizeEnabled");
     auto *spatial = window.findChild<QCheckBox *>("spatialAudioEnabled");
     CHECK(spatial);
+    auto *audioProfiles = window.findChild<QComboBox *>("audioQuickProfile");
+    CHECK(audioProfiles && audioProfiles->count() == 5);
     auto *save = window.findChild<QPushButton *>("saveSettings");
     auto *reset = window.findChild<QPushButton *>("resetDefaults");
     auto *copy = window.findChild<QPushButton *>("copySettings");

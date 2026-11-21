@@ -75,3 +75,7 @@ The primary controls are now grouped into three rows—preset management, tools,
 
 ### 3D Spatial Sound (v2.5 beta)
 Enable **3D Spatial Sound — stereo widening (headphones)** in the Audio tab. The optional effect uses FFmpeg's `stereowiden` filter through mpv (`delay=20`, `feedback=0.3`, `crossfeed=0.3`, `drymix=0.8`). It expands stereo width but **does not** provide discrete multichannel surround, head tracking, or true binaural 3D positioning. The effect is disabled by default and may affect mono compatibility; compare with the original before enabling for extended listening. Import/export and saved settings preserve the toggle.
+
+
+### Audio quick profiles (feature branch)
+The Audio tab offers one-click Music, Cinema, Dialogue and Headphones settings. Selecting a profile adjusts bass, treble and spatial stereo controls without writing the configuration until **Save settings** is clicked. These are convenience starting points, not calibrated device-specific DSP presets.

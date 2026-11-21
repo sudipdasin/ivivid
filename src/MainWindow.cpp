@@ -71,6 +71,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     spatialAudio_->setObjectName("spatialAudioEnabled");
     spatialAudio_->setToolTip("Uses FFmpeg stereowiden for a wider stereo image. This is not discrete surround or binaural object audio.");
     af->addRow(spatialAudio_);
+    auto *audioProfiles = new QComboBox(audio);
+    audioProfiles->setObjectName("audioQuickProfile");
+    audioProfiles->addItems({"Audio quick profiles…", "Music — balanced", "Cinema — spacious", "Dialogue — clarity", "Headphones — wide"});
+    af->addRow("Quick profile", audioProfiles);
+    connect(audioProfiles, QOverload<int>::of(&QComboBox::activated), this, [this](int index) {
+        switch (index) {
+        case 1: bass_->setValue(3); treble_->setValue(3); spatialAudio_->setChecked(false); break;
+        case 2: bass_->setValue(6); treble_->setValue(2); spatialAudio_->setChecked(true); break;
+        case 3: bass_->setValue(0); treble_->setValue(5); spatialAudio_->setChecked(false); break;
+        case 4: bass_->setValue(2); treble_->setValue(3); spatialAudio_->setChecked(true); break;
+        default: return;
+        }
+        status_->setText("Audio quick profile applied to controls. Save settings to persist.");
+    });
     tabs->addTab(audio, "Audio");
     auto *experimental = new QWidget(tabs);
     auto *ef = new QVBoxLayout(experimental);
