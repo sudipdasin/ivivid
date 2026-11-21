@@ -90,10 +90,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     copy->setObjectName("copySettings");
     auto *reset = new QPushButton("Reset defaults", root);
     reset->setObjectName("resetDefaults");
+    auto *compare = new QPushButton("Compare original…", root);
+    compare->setObjectName("compareOriginal");
+    compare->setToolTip("Play a video with no iVivid enhancements for an original-versus-enhanced comparison.");
     auto *play = new QPushButton("Test video…", root);
     play->setObjectName("testVideo");
     // Keep saveSettings as the stable automation identifier.
-    actions->addWidget(preview); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(play);
+    actions->addWidget(preview); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(compare); actions->addWidget(play);
     layout->addLayout(actions);
     connect(copy, &QPushButton::clicked, this, [this] {
         QGuiApplication::clipboard()->setText(ivivid::renderMpv(settings()));
@@ -112,6 +115,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         normalize_->setChecked(defaults.normalize);
         status_->setText("Default controls restored. Click Save settings to persist them.");
     });
+    connect(compare, &QPushButton::clicked, this, [this] {
+        const QString file = QFileDialog::getOpenFileName(this, "Choose original video", QString(),
+            "Video files (*.mp4 *.mkv *.webm *.avi *.mov *.m4v);;All files (*)");
+        if (file.isEmpty()) return;
+        const QString mpv = QStandardPaths::findExecutable("mpv");
+        if (mpv.isEmpty()) {
+            QMessageBox::warning(this, "mpv unavailable", "Install mpv to compare playback.");
+            return;
+        }
+        if (!QProcess::startDetached(mpv, {"--no-config", "--", file})) {
+            QMessageBox::critical(this, "Playback failed", "Could not launch original playback.");
+            return;
+        }
+        status_->setText("Playing original without enhancements: " + QFileInfo(file).fileName());
+    });
     connect(play, &QPushButton::clicked, this, [this] {
         const QString file = QFileDialog::getOpenFileName(this, "Choose a video to test", QString(),
             "Video files (*.mp4 *.mkv *.webm *.avi *.mov *.m4v);;All files (*)");
@@ -126,7 +144,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             QMessageBox::warning(this, "mpv unavailable", "Install mpv to test playback.");
             return;
         }
-        const QStringList args = {"--include=" + ivivid::configPath(), file};
+        const QStringList args = {"--include=" + ivivid::configPath(), "--", file};
         if (!QProcess::startDetached(mpv, args)) {
             QMessageBox::critical(this, "Playback failed", "Could not launch mpv.");
             return;
