@@ -17,6 +17,9 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QStandardPaths>
+#include <QSysInfo>
+#include <QLibraryInfo>
+#include <QDir>
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle("iVivid — Video Enhancement");
     resize(760, 630);
@@ -66,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     normalize_->setObjectName("normalizeEnabled");
     normalize_->setToolTip("Uses FFmpeg loudnorm via mpv. Behavior depends on your mpv/FFmpeg build.");
     ef->addWidget(normalize_);
-    ef->addWidget(new QLabel("Future experiments: GPU capability detection, custom shaders and A/B playback.", experimental));
+    ef->addWidget(new QLabel("Future experiments: GPU capability detection, custom shaders and synchronized A/B playback.", experimental));
     ef->addStretch();
     tabs->addTab(experimental, "Experimental");
     tabs->setDocumentMode(true);
@@ -90,13 +93,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     copy->setObjectName("copySettings");
     auto *reset = new QPushButton("Reset defaults", root);
     reset->setObjectName("resetDefaults");
+    auto *diagnostics = new QPushButton("System diagnostics", root);
+    diagnostics->setObjectName("systemDiagnostics");
     auto *compare = new QPushButton("Compare original…", root);
     compare->setObjectName("compareOriginal");
     compare->setToolTip("Play a video with no iVivid enhancements for an original-versus-enhanced comparison.");
     auto *play = new QPushButton("Test video…", root);
     play->setObjectName("testVideo");
     // Keep saveSettings as the stable automation identifier.
-    actions->addWidget(preview); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(compare); actions->addWidget(play);
+    actions->addWidget(preview); actions->addWidget(diagnostics); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(compare); actions->addWidget(play);
     layout->addLayout(actions);
     connect(copy, &QPushButton::clicked, this, [this] {
         QGuiApplication::clipboard()->setText(ivivid::renderMpv(settings()));
@@ -114,6 +119,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         deband_->setChecked(defaults.deband);
         normalize_->setChecked(defaults.normalize);
         status_->setText("Default controls restored. Click Save settings to persist them.");
+    });
+    connect(diagnostics, &QPushButton::clicked, this, [this] {
+        const QString mpv = QStandardPaths::findExecutable("mpv");
+        const QString report = QString("iVivid system diagnostics\\n\\nOS: %1\\nArchitecture: %2\\nQt version: %3\\nmpv: %4\\niVivid configuration: %5\\nConfig exists: %6\\n\\nHardware decode support requires playback on your actual GPU.")
+            .arg(QSysInfo::prettyProductName(), QSysInfo::currentCpuArchitecture(),
+                 QString::fromLatin1(qVersion()), mpv.isEmpty() ? QString("not installed") : mpv,
+                 ivivid::configPath(), QFileInfo::exists(ivivid::configPath()) ? QString("yes") : QString("no"));
+        QMessageBox::information(this, "iVivid system diagnostics", report);
     });
     connect(compare, &QPushButton::clicked, this, [this] {
         const QString file = QFileDialog::getOpenFileName(this, "Choose original video", QString(),

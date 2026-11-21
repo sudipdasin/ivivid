@@ -44,7 +44,7 @@ jobs:
         run: bash packaging/build-deb.sh
       - name: Install and smoke-test Debian package
         run: |
-          sudo apt-get install -y ./dist/ivivid_2.0.0-beta.1_amd64.deb
+          sudo apt-get install -y ./dist/ivivid_2.1.0-beta.1_amd64.deb
           command -v iVivid
           command -v ivivid-play
           test -f /usr/share/applications/iVivid.desktop
@@ -57,14 +57,14 @@ jobs:
       - name: Build downloadable ZIP application bundle
         run: |
           set -euo pipefail
-          mkdir -p dist/ivivid-2.0.0-beta.1-linux-amd64/bin
-          install -m755 build/iVivid dist/ivivid-2.0.0-beta.1-linux-amd64/bin/iVivid
-          install -m755 scripts/ivivid-play dist/ivivid-2.0.0-beta.1-linux-amd64/bin/ivivid-play
-          cp packaging/iVivid.desktop dist/ivivid-2.0.0-beta.1-linux-amd64/
-          printf "iVivid beta Linux amd64 ZIP bundle. Requires Qt6 Widgets and mpv installed on the host. Run bin/iVivid. This is not a standalone AppImage.\\n" > dist/ivivid-2.0.0-beta.1-linux-amd64/README.txt
-          (cd dist && zip -qr ivivid-2.0.0-beta.1-linux-amd64.zip ivivid-2.0.0-beta.1-linux-amd64)
-          unzip -t dist/ivivid-2.0.0-beta.1-linux-amd64.zip
-          rm -rf dist/ivivid-2.0.0-beta.1-linux-amd64
+          mkdir -p dist/ivivid-2.1.0-beta.1-linux-amd64/bin
+          install -m755 build/iVivid dist/ivivid-2.1.0-beta.1-linux-amd64/bin/iVivid
+          install -m755 scripts/ivivid-play dist/ivivid-2.1.0-beta.1-linux-amd64/bin/ivivid-play
+          cp packaging/iVivid.desktop dist/ivivid-2.1.0-beta.1-linux-amd64/
+          printf "iVivid beta Linux amd64 ZIP bundle. Requires Qt6 Widgets and mpv installed on the host. Run bin/iVivid. This is not a standalone AppImage.\\n" > dist/ivivid-2.1.0-beta.1-linux-amd64/README.txt
+          (cd dist && zip -qr ivivid-2.1.0-beta.1-linux-amd64.zip ivivid-2.1.0-beta.1-linux-amd64)
+          unzip -t dist/ivivid-2.1.0-beta.1-linux-amd64.zip
+          rm -rf dist/ivivid-2.1.0-beta.1-linux-amd64
       - name: Inspect package
         run: |
           dpkg-deb --info dist/*.deb
@@ -82,13 +82,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          tag="v2.0.0-beta.1"
+          tag="v2.1.0-beta.1"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release already exists; not replacing immutable tested assets."
             exit 0
           fi
           if gh release create "$tag" dist/* --target "$GITHUB_SHA" --prerelease \
-            --title "iVivid v2.0.0-beta.1 — Linux test preview" \
+            --title "iVivid v2.1.0-beta.1 — Linux test preview" \
             --notes "Ubuntu 24.04 amd64 test preview. Validated by CI: C++ tests, synthetic mpv video/audio decoding, package installation and virtual-display GUI startup. Hardware GPU/HDR behavior remains unverified."; then
             echo "Release published."
           else
