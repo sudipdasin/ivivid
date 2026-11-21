@@ -5,10 +5,10 @@
 The public beta preview includes a Qt 6 GUI with separate **Video**, **Audio**, and **Experimental** tabs. Experimental features are opt-in and clearly marked.
 
 ## Install from the beta package (Ubuntu 24.04 / Debian-compatible)
-Download the `ivivid_2.4.0-beta.1_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
+Download the `ivivid_2.5.0-beta.1_amd64.deb` asset from the [GitHub Releases page](https://github.com/sudipdasin/ivivid/releases) **when the CI release workflow has succeeded**.
 
 ```sh
-sudo apt install ./ivivid_2.4.0-beta.1_amd64.deb
+sudo apt install ./ivivid_2.5.0-beta.1_amd64.deb
 ```
 
 Open **iVivid** from your application menu or run `iVivid`.
@@ -50,7 +50,7 @@ See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [release p
 
 
 ### Downloadable Linux ZIP bundle
-The GitHub Releases page also offers `ivivid-2.4.0-beta.1-linux-amd64.zip`, containing the compiled `bin/iVivid` executable and launcher. It requires host Qt6 Widgets and mpv; it is **not** a fully self-contained AppImage. The Debian `.deb` remains recommended for Ubuntu/Debian systems.
+The GitHub Releases page also offers `ivivid-2.5.0-beta.1-linux-amd64.zip`, containing the compiled `bin/iVivid` executable and launcher. It requires host Qt6 Widgets and mpv; it is **not** a fully self-contained AppImage. The Debian `.deb` remains recommended for Ubuntu/Debian systems.
 
 
 ### Compare original playback (v2 beta)
@@ -71,3 +71,7 @@ The GUI can export the currently selected settings to a standalone mpv `.conf` p
 
 ### Workflow layout and keyboard shortcuts (v2.4 beta)
 The primary controls are now grouped into three rows—preset management, tools, and playback/save—rather than a single overflowing toolbar. Keyboard shortcuts: **Ctrl+S** saves enhancements, **Ctrl+O** imports a preset, and **Ctrl+P** previews generated settings.
+
+
+### 3D Spatial Sound (v2.5 beta)
+Enable **3D Spatial Sound — stereo widening (headphones)** in the Audio tab. The optional effect uses FFmpeg's `stereowiden` filter through mpv (`delay=20`, `feedback=0.3`, `crossfeed=0.3`, `drymix=0.8`). It expands stereo width but **does not** provide discrete multichannel surround, head tracking, or true binaural 3D positioning. The effect is disabled by default and may affect mono compatibility; compare with the original before enabling for extended listening. Import/export and saved settings preserve the toggle.

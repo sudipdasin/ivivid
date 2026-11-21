@@ -35,6 +35,8 @@ int main() {
     s.bass = 0;
     s.treble = 21; CHECK(!ivivid::validate(s).isEmpty());
     s.treble = 0;
+    s.spatialAudio = true;
+    CHECK(ivivid::renderMpv(s).contains("stereowiden"));
     s.normalize = true;
     CHECK(ivivid::renderMpv(s).contains("loudnorm"));
     s.normalize = false;
@@ -60,6 +62,7 @@ int main() {
     CHECK(loaded.hardwareDecode == s.hardwareDecode);
     CHECK(loaded.deband == s.deband);
     CHECK(loaded.normalize == s.normalize);
+    CHECK(loaded.spatialAudio == s.spatialAudio);
     CHECK(ivivid::renderMpv(loaded) == ivivid::renderMpv(s));
     QFile invalid(ivivid::configPath());
     CHECK(invalid.open(QIODevice::WriteOnly | QIODevice::Truncate));

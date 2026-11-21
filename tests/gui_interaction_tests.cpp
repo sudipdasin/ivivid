@@ -32,6 +32,8 @@ int main(int argc, char **argv) {
     auto *sat = window.findChild<QSlider *>("saturationSlider");
     auto *bass = window.findChild<QSlider *>("bassSlider");
     auto *normalize = window.findChild<QCheckBox *>("normalizeEnabled");
+    auto *spatial = window.findChild<QCheckBox *>("spatialAudioEnabled");
+    CHECK(spatial);
     auto *save = window.findChild<QPushButton *>("saveSettings");
     auto *reset = window.findChild<QPushButton *>("resetDefaults");
     auto *copy = window.findChild<QPushButton *>("copySettings");
@@ -51,12 +53,14 @@ int main(int argc, char **argv) {
     sat->setValue(140);
     tabs->setCurrentIndex(1);
     bass->setValue(6);
+    spatial->setChecked(true);
     tabs->setCurrentIndex(2);
     normalize->setChecked(true);
     tabs->setCurrentIndex(0);
     copy->click();
     CHECK(QGuiApplication::clipboard()->text().contains("saturation=40"));
     CHECK(QGuiApplication::clipboard()->text().contains("loudnorm"));
+    CHECK(QGuiApplication::clipboard()->text().contains("stereowiden"));
     CHECK(!QFile::exists(ivivid::configPath()));
     save->click();
     QCoreApplication::processEvents();
@@ -75,11 +79,13 @@ int main(int argc, char **argv) {
     CHECK(reopened.findChild<QSlider *>("saturationSlider")->value() == 140);
     CHECK(reopened.findChild<QSlider *>("bassSlider")->value() == 6);
     CHECK(reopened.findChild<QCheckBox *>("normalizeEnabled")->isChecked());
+    CHECK(reopened.findChild<QCheckBox *>("spatialAudioEnabled")->isChecked());
     reset->click();
     CHECK(preset->currentIndex() == 1);
     CHECK(sat->value() == 110);
     CHECK(bass->value() == 0);
     CHECK(!normalize->isChecked());
+    CHECK(!spatial->isChecked());
     // Reset is non-destructive until the user explicitly saves.
     ivivid::Settings persisted;
     QString error;
@@ -90,5 +96,6 @@ int main(int argc, char **argv) {
     CHECK(persisted.saturation == 110);
     CHECK(persisted.bass == 0);
     CHECK(!persisted.normalize);
+    CHECK(!persisted.spatialAudio);
     return 0;
 }

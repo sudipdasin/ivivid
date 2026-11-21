@@ -28,6 +28,7 @@ QString renderMpv(const Settings &s) {
     QStringList filters;
     if (s.bass) filters << QString("lavfi=[equalizer=f=100:t=h:w=200:g=%1]").arg(s.bass);
     if (s.treble) filters << QString("lavfi=[equalizer=f=6000:t=h:w=200:g=%1]").arg(s.treble);
+    if (s.spatialAudio) filters << "lavfi=[stereowiden=delay=20:feedback=0.3:crossfeed=0.3:drymix=0.8]";
     if (s.normalize) filters << "lavfi=[loudnorm=I=-16:TP=-1.5:LRA=11]";
     if (!filters.isEmpty()) output += "af=" + filters.join(",") + "\n";
     return output;
@@ -115,6 +116,7 @@ bool loadConfigFile(const QString &path, Settings *settings, QString *error) {
     bool seenBass = false;
     bool seenTreble = false;
     bool seenNormalize = false;
+    bool seenSpatial = false;
     for (const auto &part : filters.split(',', Qt::SkipEmptyParts)) {
         if (part.startsWith("lavfi=[equalizer=f=100:t=h:w=200:g=") && part.endsWith(']')) {
             if (seenBass) { if (error) *error = "Duplicate bass filter"; return false; }
@@ -128,6 +130,9 @@ bool loadConfigFile(const QString &path, Settings *settings, QString *error) {
             bool ok = false;
             next.treble = part.mid(QString("lavfi=[equalizer=f=6000:t=h:w=200:g=").size()).chopped(1).toInt(&ok);
             if (!ok) { if (error) *error = "Invalid treble filter"; return false; }
+        } else if (part == "lavfi=[stereowiden=delay=20:feedback=0.3:crossfeed=0.3:drymix=0.8]") {
+            if (seenSpatial) { if (error) *error = "Duplicate spatial audio filter"; return false; }
+            seenSpatial = true;
         } else if (part == "lavfi=[loudnorm=I=-16:TP=-1.5:LRA=11]") {
             if (seenNormalize) { if (error) *error = "Duplicate normalization filter"; return false; }
             seenNormalize = true;
@@ -137,6 +142,7 @@ bool loadConfigFile(const QString &path, Settings *settings, QString *error) {
         }
     }
     next.normalize = seenNormalize;
+    next.spatialAudio = seenSpatial;
     const QString invalid = validate(next);
     if (!invalid.isEmpty()) { if (error) *error = invalid; return false; }
     *settings = next;

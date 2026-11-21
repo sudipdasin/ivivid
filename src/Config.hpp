@@ -12,6 +12,7 @@ struct Settings {
     bool hardwareDecode = true;
     bool deband = true;
     bool normalize = false;
+    bool spatialAudio = false;
 };
 QString validate(const Settings &settings);
 QString renderMpv(const Settings &settings);

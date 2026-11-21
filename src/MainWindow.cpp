@@ -67,6 +67,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *af = new QFormLayout(audio);
     bass_ = slider(0, 20, 0); bass_->setObjectName("bassSlider"); af->addRow("Bass boost (dB)", bass_);
     treble_ = slider(0, 20, 0); treble_->setObjectName("trebleSlider"); af->addRow("Treble boost (dB)", treble_);
+    spatialAudio_ = new QCheckBox("3D Spatial Sound — stereo widening (headphones)", audio);
+    spatialAudio_->setObjectName("spatialAudioEnabled");
+    spatialAudio_->setToolTip("Uses FFmpeg stereowiden for a wider stereo image. This is not discrete surround or binaural object audio.");
+    af->addRow(spatialAudio_);
     tabs->addTab(audio, "Audio");
     auto *experimental = new QWidget(tabs);
     auto *ef = new QVBoxLayout(experimental);
@@ -141,6 +145,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         hardware_->setChecked(defaults.hardwareDecode);
         deband_->setChecked(defaults.deband);
         normalize_->setChecked(defaults.normalize);
+        spatialAudio_->setChecked(defaults.spatialAudio);
         status_->setText("Default controls restored. Click Save settings to persist them.");
     });
     connect(exportPreset, &QPushButton::clicked, this, [this] {
@@ -176,6 +181,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         hardware_->setChecked(imported.hardwareDecode);
         deband_->setChecked(imported.deband);
         normalize_->setChecked(imported.normalize);
+        spatialAudio_->setChecked(imported.spatialAudio);
         status_->setText("Imported preset (not saved): " + QFileInfo(path).fileName());
     });
     connect(inspect, &QPushButton::clicked, this, [this] {
@@ -286,6 +292,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         hardware_->setChecked(restored.hardwareDecode);
         deband_->setChecked(restored.deband);
         normalize_->setChecked(restored.normalize);
+        spatialAudio_->setChecked(restored.spatialAudio);
     } else {
         status_->setText("Could not restore saved settings: " + restoreError);
     }
@@ -325,5 +332,6 @@ ivivid::Settings MainWindow::settings() const {
     s.hardwareDecode = hardware_->isChecked();
     s.deband = deband_->isChecked();
     s.normalize = normalize_->isChecked();
+    s.spatialAudio = spatialAudio_->isChecked();
     return s;
 }
