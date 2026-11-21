@@ -23,6 +23,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QSaveFile>
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle("iVivid — Video Enhancement");
     resize(760, 630);
@@ -96,6 +97,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     copy->setObjectName("copySettings");
     auto *reset = new QPushButton("Reset defaults", root);
     reset->setObjectName("resetDefaults");
+    auto *importPreset = new QPushButton("Import preset…", root);
+    importPreset->setObjectName("importPreset");
+    auto *exportPreset = new QPushButton("Export preset…", root);
+    exportPreset->setObjectName("exportPreset");
     auto *inspect = new QPushButton("Inspect media…", root);
     inspect->setObjectName("inspectMedia");
     inspect->setToolTip("Inspect local video/audio metadata with ffprobe, without changing the file.");
@@ -107,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *play = new QPushButton("Test video…", root);
     play->setObjectName("testVideo");
     // Keep saveSettings as the stable automation identifier.
-    actions->addWidget(preview); actions->addWidget(inspect); actions->addWidget(diagnostics); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(compare); actions->addWidget(play);
+    actions->addWidget(preview); actions->addWidget(importPreset); actions->addWidget(exportPreset); actions->addWidget(inspect); actions->addWidget(diagnostics); actions->addWidget(copy); actions->addWidget(reset); actions->addWidget(apply); actions->addWidget(compare); actions->addWidget(play);
     layout->addLayout(actions);
     connect(copy, &QPushButton::clicked, this, [this] {
         QGuiApplication::clipboard()->setText(ivivid::renderMpv(settings()));
@@ -125,6 +130,41 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         deband_->setChecked(defaults.deband);
         normalize_->setChecked(defaults.normalize);
         status_->setText("Default controls restored. Click Save settings to persist them.");
+    });
+    connect(exportPreset, &QPushButton::clicked, this, [this] {
+        const QString path = QFileDialog::getSaveFileName(this, "Export iVivid preset", QString(), "mpv configuration (*.conf);;All files (*)");
+        if (path.isEmpty()) return;
+        const QString validation = ivivid::validate(settings());
+        if (!validation.isEmpty()) {
+            QMessageBox::warning(this, "Invalid settings", validation);
+            return;
+        }
+        QSaveFile output(path);
+        if (!output.open(QIODevice::WriteOnly) || output.write(ivivid::renderMpv(settings()).toUtf8()) < 0 || !output.commit()) {
+            QMessageBox::warning(this, "Export failed", "Could not write the selected preset file.");
+            return;
+        }
+        status_->setText("Exported preset: " + QFileInfo(path).fileName());
+    });
+    connect(importPreset, &QPushButton::clicked, this, [this] {
+        const QString path = QFileDialog::getOpenFileName(this, "Import iVivid preset", QString(), "mpv configuration (*.conf);;All files (*)");
+        if (path.isEmpty()) return;
+        ivivid::Settings imported;
+        QString error;
+        if (!ivivid::loadConfigFile(path, &imported, &error)) {
+            QMessageBox::warning(this, "Import rejected", error);
+            return;
+        }
+        preset_->setCurrentIndex(imported.preset);
+        saturation_->setValue(imported.saturation);
+        brightness_->setValue(imported.brightness);
+        contrast_->setValue(imported.contrast);
+        bass_->setValue(imported.bass);
+        treble_->setValue(imported.treble);
+        hardware_->setChecked(imported.hardwareDecode);
+        deband_->setChecked(imported.deband);
+        normalize_->setChecked(imported.normalize);
+        status_->setText("Imported preset (not saved): " + QFileInfo(path).fileName());
     });
     connect(inspect, &QPushButton::clicked, this, [this] {
         const QString file = QFileDialog::getOpenFileName(this, "Inspect local media", QString(),

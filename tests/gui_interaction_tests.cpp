@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
     auto *save = window.findChild<QPushButton *>("saveSettings");
     auto *reset = window.findChild<QPushButton *>("resetDefaults");
     auto *copy = window.findChild<QPushButton *>("copySettings");
+    auto *importPreset = window.findChild<QPushButton *>("importPreset");
+    auto *exportPreset = window.findChild<QPushButton *>("exportPreset");
+    CHECK(importPreset && exportPreset);
     auto *inspect = window.findChild<QPushButton *>("inspectMedia");
     auto *diagnostics = window.findChild<QPushButton *>("systemDiagnostics");
     auto *compare = window.findChild<QPushButton *>("compareOriginal");
