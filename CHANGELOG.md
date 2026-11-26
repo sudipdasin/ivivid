@@ -1,3 +1,9 @@
+# v2.6.0-beta.1 (development candidate)
+- Introduce asynchronous repository update discovery with stable/beta selection and a persistent automatic-check preference.
+- Correct stale CLI version identity and derive DEB version from the compiled application.
+- Include read-only updater helper in independent DEB and ZIP packages; add seven selection regression tests.
+- Automatic installation, signatures and rollback remain unimplemented release gates.
+
 # v2.5.0-beta.1
 - Add optional 3D Spatial Sound stereo-widening effect in the Audio tab using FFmpeg stereowiden via mpv.
 - Persist and validate the spatial effect in config files and portable preset imports.

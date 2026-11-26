@@ -75,3 +75,7 @@ The primary controls are now grouped into three rows—preset management, tools,
 
 ### 3D Spatial Sound (v2.5 beta)
 Enable **3D Spatial Sound — stereo widening (headphones)** in the Audio tab. The optional effect uses FFmpeg's `stereowiden` filter through mpv (`delay=20`, `feedback=0.3`, `crossfeed=0.3`, `drymix=0.8`). It expands stereo width but **does not** provide discrete multichannel surround, head tracking, or true binaural 3D positioning. The effect is disabled by default and may affect mono compatibility; compare with the original before enabling for extended listening. Import/export and saved settings preserve the toggle.
+
+
+### Repository update discovery (2.6 candidate)
+The Software updates panel checks GitHub releases automatically on startup and every six hours while running, or on demand. Choose Stable or Beta and disable automatic checks if desired. The helper matches amd64 DEB or ZIP assets and a checksum file, rejects downgrades, and does not install anything. Manual release downloads remain available; signed package authentication and automatic installation/rollback are not yet implemented. Python 3 is required. `IVIVID_DISABLE_UPDATE_CHECK=1` disables network checks for tests or offline sessions.

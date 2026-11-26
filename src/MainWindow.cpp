@@ -26,6 +26,12 @@
 #include <QSaveFile>
 #include <QShortcut>
 #include <QKeySequence>
+#include <QCoreApplication>
+#include <QDesktopServices>
+#include <QRegularExpression>
+#include <QSettings>
+#include <QTimer>
+#include <QUrl>
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle("iVivid — Video Enhancement");
     resize(1020, 700);
@@ -130,6 +136,88 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     preview->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_P));
     importPreset->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
     layout->addLayout(actions);
+    auto *updates = new QGroupBox("Software updates", root);
+    auto *updateLayout = new QVBoxLayout(updates);
+    auto *updateControls = new QHBoxLayout();
+    auto *updateStatus = new QLabel("Installed: " + QCoreApplication::applicationVersion(), updates);
+    updateStatus->setTextFormat(Qt::PlainText);
+    updateStatus->setWordWrap(true);
+    updateStatus->setObjectName("updateStatus");
+    auto *channel = new QComboBox(updates);
+    channel->setObjectName("updateChannel");
+    channel->addItems({"Stable", "Beta"});
+    auto *automatic = new QCheckBox("Automatically check", updates);
+    automatic->setObjectName("automaticUpdateCheck");
+    auto *check = new QPushButton("Check for updates", updates);
+    check->setObjectName("checkUpdates");
+    auto *releases = new QPushButton("Release downloads", updates);
+    auto *prefs = new QSettings("iVivid", "Updates", updates);
+    channel->setCurrentIndex(prefs->value("channel", QCoreApplication::applicationVersion().contains("-beta.") ? 1 : 0).toInt() == 1 ? 1 : 0);
+    automatic->setChecked(prefs->value("automaticCheck", true).toBool());
+    updateControls->addWidget(channel);
+    updateControls->addWidget(automatic);
+    updateControls->addWidget(check);
+    updateControls->addWidget(releases);
+    updateLayout->addLayout(updateControls);
+    updateLayout->addWidget(updateStatus);
+    layout->addWidget(updates);
+    auto *updater = new QProcess(updates);
+    auto *deadline = new QTimer(updates);
+    deadline->setSingleShot(true);
+    const auto beginCheck = [updater, deadline, check, channel, updateStatus] {
+        if (updater->state() != QProcess::NotRunning) return;
+        if (qEnvironmentVariableIsSet("IVIVID_DISABLE_UPDATE_CHECK")) {
+            updateStatus->setText("Update checks disabled for this session."); return;
+        }
+        if (QSysInfo::currentCpuArchitecture() != "x86_64") {
+            updateStatus->setText("No compatible amd64 updater package for this architecture."); return;
+        }
+        const QString directory = QCoreApplication::applicationDirPath();
+        const QString helper = directory + "/ivivid-update";
+        if (!QFileInfo(helper).isExecutable()) {
+            updateStatus->setText("Update checker not installed. Use release downloads."); return;
+        }
+        const QString package = directory == "/usr/bin" ? "deb" : "zip";
+        check->setEnabled(false);
+        updateStatus->setText("Checking repository releases…");
+        updater->start(helper, {"--current", QCoreApplication::applicationVersion(),
+                               "--channel", channel->currentIndex() == 1 ? "beta" : "stable",
+                               "--format", package});
+        deadline->start(15000);
+    };
+    connect(deadline, &QTimer::timeout, updates, [updater] { updater->kill(); });
+    connect(updater, &QProcess::errorOccurred, updates, [deadline, check, updateStatus](QProcess::ProcessError error) {
+        if (error != QProcess::FailedToStart) return;
+        deadline->stop();
+        check->setEnabled(true);
+        updateStatus->setText("Update checker unavailable. Existing installation unchanged.");
+    });
+    connect(updater, &QProcess::finished, updates, [updater, deadline, check, updateStatus](int code, QProcess::ExitStatus result) {
+        deadline->stop();
+        check->setEnabled(true);
+        const QString version = QString::fromUtf8(updater->readAllStandardOutput()).trimmed();
+        updater->readAllStandardError();
+        const QRegularExpression allowed(R"(^[0-9]+\.[0-9]+\.[0-9]+(?:-beta\.[0-9]+)?$)");
+        if (result != QProcess::NormalExit || code != 0) {
+            updateStatus->setText("Update check unavailable. Existing installation unchanged.");
+        } else if (version == "CURRENT") {
+            updateStatus->setText("No newer compatible release in selected channel.");
+        } else if (allowed.match(version).hasMatch()) {
+            updateStatus->setText("New release " + version + " found. Open release downloads to review; automatic installation is not enabled.");
+        } else {
+            updateStatus->setText("Invalid updater response. Existing installation unchanged.");
+        }
+    });
+    connect(check, &QPushButton::clicked, updates, beginCheck);
+    connect(releases, &QPushButton::clicked, updates, [] {
+        QDesktopServices::openUrl(QUrl("https://github.com/sudipdasin/ivivid/releases"));
+    });
+    connect(channel, &QComboBox::currentIndexChanged, updates, [prefs](int value) { prefs->setValue("channel", value); });
+    connect(automatic, &QCheckBox::toggled, updates, [prefs](bool value) { prefs->setValue("automaticCheck", value); });
+    QTimer::singleShot(3000, updates, [automatic, beginCheck] { if (automatic->isChecked()) beginCheck(); });
+    auto *periodic = new QTimer(updates);
+    connect(periodic, &QTimer::timeout, updates, [automatic, beginCheck] { if (automatic->isChecked()) beginCheck(); });
+    periodic->start(6 * 60 * 60 * 1000);
     connect(copy, &QPushButton::clicked, this, [this] {
         QGuiApplication::clipboard()->setText(ivivid::renderMpv(settings()));
         status_->setText("Enhancement settings copied to clipboard.");
