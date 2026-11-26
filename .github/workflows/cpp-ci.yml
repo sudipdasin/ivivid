@@ -1,9 +1,5 @@
 name: iVivid Linux beta build
 on:
-  push:
-    branches: ["beta/**"]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 permissions:
   contents: write
