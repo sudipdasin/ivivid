@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     audioProfiles->setObjectName("audioQuickProfile");
     audioProfiles->addItems({"Audio quick profiles…", "Music — balanced", "Cinema — spacious", "Dialogue — clarity", "Headphones — wide"});
     af->addRow("Quick profile", audioProfiles);
-    connect(audioProfiles, QOverload<int>::of(&QComboBox::activated), this, [this](int index) {
+    connect(audioProfiles, QOverload<int>::of(&QComboBox::activated), this, [this, audioProfiles](int index) {
         switch (index) {
         case 1: bass_->setValue(3); treble_->setValue(3); spatialAudio_->setChecked(false); break;
         case 2: bass_->setValue(6); treble_->setValue(2); spatialAudio_->setChecked(true); break;
@@ -83,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         case 4: bass_->setValue(2); treble_->setValue(3); spatialAudio_->setChecked(true); break;
         default: return;
         }
+        audioProfiles->setCurrentIndex(0);
         status_->setText("Audio quick profile applied to controls. Save settings to persist.");
     });
     tabs->addTab(audio, "Audio");

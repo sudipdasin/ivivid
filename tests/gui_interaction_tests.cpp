@@ -13,6 +13,7 @@
 #include <QTabWidget>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QMetaObject>
 #include <cstdlib>
 #include <cstdio>
 #define CHECK(expr) do { if (!(expr)) { std::fprintf(stderr, "CHECK failed: %s at %s:%d\\n", #expr, __FILE__, __LINE__); std::fflush(stderr); std::abort(); } } while (false)
@@ -51,6 +52,20 @@ int main(int argc, char **argv) {
     auto *status = window.findChild<QLabel *>("statusMessage");
     CHECK(preset && sat && bass && normalize && save && reset && copy && status);
     CHECK(preset->count() == 3);
+    auto *treble = window.findChild<QSlider *>("trebleSlider");
+    CHECK(treble);
+    const int expectedBass[] = {0, 3, 6, 0, 2};
+    const int expectedTreble[] = {0, 3, 2, 5, 3};
+    const bool expectedSpatial[] = {false, false, true, false, true};
+    for (int profile = 1; profile <= 4; ++profile) {
+        audioProfiles->setCurrentIndex(profile);
+        CHECK(QMetaObject::invokeMethod(audioProfiles, "activated", Qt::DirectConnection, Q_ARG(int, profile)));
+        CHECK(audioProfiles->currentIndex() == 0);
+        CHECK(bass->value() == expectedBass[profile]);
+        CHECK(treble->value() == expectedTreble[profile]);
+        CHECK(spatial->isChecked() == expectedSpatial[profile]);
+        CHECK(!QFile::exists(ivivid::configPath()));
+    }
     preset->setCurrentIndex(2);
     sat->setValue(140);
     tabs->setCurrentIndex(1);
