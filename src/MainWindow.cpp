@@ -272,7 +272,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         spatialAudio_->setChecked(imported.spatialAudio);
         status_->setText("Imported preset (not saved): " + QFileInfo(path).fileName());
     });
-    connect(inspect, &QPushButton::clicked, this, [this] {
+    connect(inspect, &QPushButton::clicked, this, [this, inspect] {
         const QString file = QFileDialog::getOpenFileName(this, "Inspect local media", QString(),
             "Media files (*.mp4 *.mkv *.webm *.avi *.mov *.m4v *.mp3 *.flac *.wav *.ogg);;All files (*)");
         if (file.isEmpty()) return;
@@ -281,42 +281,61 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             QMessageBox::warning(this, "ffprobe unavailable", "Install ffmpeg to inspect media metadata.");
             return;
         }
-        QProcess process;
-        process.start(probe, {"-v", "error", "-show_entries", "format=duration,size:stream=codec_type,codec_name,width,height", "-of", "json", "--", file});
-        if (!process.waitForStarted(3000) || !process.waitForFinished(10000)) {
-            process.kill(); process.waitForFinished(1000);
-            QMessageBox::warning(this, "Inspection timed out", "ffprobe could not inspect this file within 10 seconds.");
-            return;
-        }
-        if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
-            QMessageBox::warning(this, "Inspection failed", "ffprobe could not read metadata for this file.");
-            return;
-        }
-        QJsonParseError parseError;
-        const QJsonDocument doc = QJsonDocument::fromJson(process.readAllStandardOutput(), &parseError);
-        if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-            QMessageBox::warning(this, "Inspection failed", "ffprobe returned invalid metadata.");
-            return;
-        }
-        const QJsonObject data = doc.object();
-        const QJsonObject format = data.value("format").toObject();
-        QStringList lines;
-        lines << "File: " + QFileInfo(file).fileName();
-        lines << "Duration (seconds): " + format.value("duration").toString("unknown");
-        lines << "Size (bytes): " + format.value("size").toString("unknown");
-        for (const QJsonValue &entry : data.value("streams").toArray()) {
-            const QJsonObject stream = entry.toObject();
-            QString description = stream.value("codec_type").toString("stream") + ": " + stream.value("codec_name").toString("unknown");
-            if (stream.contains("width") && stream.contains("height"))
-                description += QString(" (%1 x %2)").arg(stream.value("width").toInt()).arg(stream.value("height").toInt());
-            lines << description;
-        }
-        QMessageBox::information(this, "Local media inspection", lines.join("\\n"));
-        status_->setText("Inspected metadata: " + QFileInfo(file).fileName());
+        auto *process = new QProcess(this);
+        auto *deadline = new QTimer(process);
+        deadline->setSingleShot(true);
+        inspect->setEnabled(false);
+        status_->setText("Inspecting metadata: " + QFileInfo(file).fileName());
+        connect(deadline, &QTimer::timeout, process, [process] {
+            process->setProperty("inspectionTimedOut", true);
+            process->kill();
+        });
+        connect(process, &QProcess::errorOccurred, this, [this, inspect, process, deadline](QProcess::ProcessError error) {
+            if (error != QProcess::FailedToStart) return;
+            deadline->stop();
+            inspect->setEnabled(true);
+            status_->setText("Media inspection could not start.");
+            process->deleteLater();
+        });
+        connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+            [this, inspect, process, deadline, file](int code, QProcess::ExitStatus exitStatus) {
+                deadline->stop();
+                inspect->setEnabled(true);
+                const bool timedOut = process->property("inspectionTimedOut").toBool();
+                const QByteArray output = process->readAllStandardOutput();
+                process->deleteLater();
+                if (timedOut || code != 0 || exitStatus != QProcess::NormalExit) {
+                    status_->setText(timedOut ? "Media inspection timed out." : "Media inspection failed.");
+                    return;
+                }
+                QJsonParseError error;
+                const auto doc = QJsonDocument::fromJson(output, &error);
+                if (error.error != QJsonParseError::NoError || !doc.isObject()) {
+                    status_->setText("Invalid media metadata.");
+                    return;
+                }
+                const auto data = doc.object();
+                const auto format = data.value("format").toObject();
+                QStringList lines;
+                lines << "File: " + QFileInfo(file).fileName();
+                lines << "Duration (seconds): " + format.value("duration").toString("unknown");
+                lines << "Size (bytes): " + format.value("size").toString("unknown");
+                for (const auto &entry : data.value("streams").toArray()) {
+                    const auto stream = entry.toObject();
+                    QString description = stream.value("codec_type").toString("stream") + ": " + stream.value("codec_name").toString("unknown");
+                    if (stream.contains("width") && stream.contains("height"))
+                        description += QString(" (%1 x %2)").arg(stream.value("width").toInt()).arg(stream.value("height").toInt());
+                    lines << description;
+                }
+                status_->setText("Inspected metadata: " + QFileInfo(file).fileName());
+                QMessageBox::information(this, "Local media inspection", lines.join('\n'));
+            });
+        deadline->start(10000);
+        process->start(probe, {"-v", "error", "-show_entries", "format=duration,size:stream=codec_type,codec_name,width,height", "-of", "json", "--", file});
     });
     connect(diagnostics, &QPushButton::clicked, this, [this] {
         const QString mpv = QStandardPaths::findExecutable("mpv");
-        const QString report = QString("iVivid system diagnostics\\n\\nOS: %1\\nArchitecture: %2\\nQt version: %3\\nmpv: %4\\niVivid configuration: %5\\nConfig exists: %6\\n\\nHardware decode support requires playback on your actual GPU.")
+        const QString report = QString("iVivid system diagnostics\n\nOS: %1\nArchitecture: %2\nQt version: %3\nmpv: %4\niVivid configuration: %5\nConfig exists: %6\n\nHardware decode support requires playback on your actual GPU.")
             .arg(QSysInfo::prettyProductName(), QSysInfo::currentCpuArchitecture(),
                  QString::fromLatin1(qVersion()), mpv.isEmpty() ? QString("not installed") : mpv,
                  ivivid::configPath(), QFileInfo::exists(ivivid::configPath()) ? QString("yes") : QString("no"));

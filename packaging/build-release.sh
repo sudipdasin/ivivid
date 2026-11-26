@@ -25,6 +25,7 @@ bash tests/launcher_tests.sh
 bash tests/debian-version-tests.sh
 bash tests/playback_smoke.sh
 bash tests/spatial-smoke.sh
+bash tests/media-inspection-smoke.sh
 code=0
 IVIVID_DISABLE_UPDATE_CHECK=1 timeout 5s xvfb-run -a ./build/iVivid || code=$?
 [[ $code == 124 || $code == 0 ]]
