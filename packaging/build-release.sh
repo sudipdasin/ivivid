@@ -37,11 +37,13 @@ PYTHONPATH="$work/scripts" python3 -c 'import sys; from deb_identity import veri
 dpkg-deb --contents "${packages[0]}"
 bundle="ivivid-$version-linux-amd64"
 mkdir -p "$bundle/bin"
-install -m755 build/iVivid scripts/ivivid-play scripts/ivivid-update "$bundle/bin/"
+install -m755 build/iVivid scripts/ivivid-play build/ivivid-update "$bundle/bin/"
 cp packaging/iVivid.desktop "$bundle/"
-printf 'Requires Qt6 Widgets, mpv and Python 3. Run bin/iVivid.\n' > "$bundle/README.txt"
+printf 'Requires Qt6 Widgets, mpv, Python 3.9+ and OpenSSL. Run bin/iVivid.\n' > "$bundle/README.txt"
 zip -qr "dist/$bundle.zip" "$bundle"
 unzip -t "dist/$bundle.zip"
+"$bundle/bin/ivivid-update" --help >/dev/null
+"$bundle/bin/ivivid-update" prepare --help >/dev/null
 (cd dist && sha256sum -- *.deb *.zip > SHA256SUMS && sha256sum -c SHA256SUMS)
 printf '%s\n' "$sha" > dist/SOURCE_COMMIT
 mkdir "$output"

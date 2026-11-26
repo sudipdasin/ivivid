@@ -17,3 +17,7 @@ Run `bash packaging/check-native-build.sh` to list missing native tools and Qt6 
 ## Qt-independent updater verification
 
 Run `cmake -S . -B build-updater -DIVIVID_UPDATER_ONLY=ON -DBUILD_TESTING=ON` followed by `ctest --test-dir build-updater --output-on-failure -j2`. Requires Python 3, OpenSSL and dpkg-deb. This mode runs eight updater test suites without configuring the native target. It is not a release build, and must never substitute for the complete native build and VM verification. The connected preparation module is available from source as `python3 scripts/update_prepare.py --help`; it requires an independently trusted public key and its pinned fingerprint, and never installs or executes an update. Production trust provisioning, packaging the helper and UI installation integration remain outstanding.
+
+## Packaged updater
+
+The native build generates a self-contained executable Python archive at `build/ivivid-update`. Both DEB and portable ZIP include it instead of the discovery-only script. Existing discovery arguments remain unchanged; `ivivid-update prepare --help` exposes authenticated preparation without installation. Both command entrypoints must import successfully at build time, and the release script checks them again in the staged ZIP. The builder is covered by seven fixture tests under CTest. Python 3.9+ and OpenSSL are runtime prerequisites for preparation. Production trust-key provisioning, installer execution, GUI integration and native verification remain release blockers. Do not describe this as a fully automatic installer.

@@ -14,7 +14,7 @@ Section: video
 Priority: optional
 Architecture: amd64
 Maintainer: iVivid Contributors <noreply@github.com>
-Depends: libqt6widgets6 (>= 6.2), mpv, python3
+Depends: libqt6widgets6 (>= 6.2), mpv, python3 (>= 3.9), openssl
 Description: iVivid Linux video enhancement configurator
  C++ and Qt interface for mpv playback enhancement.
 EOF
