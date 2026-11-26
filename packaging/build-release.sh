@@ -4,7 +4,7 @@ root=$(git rev-parse --show-toplevel)
 cd "$root"
 [[ -z $(git status --porcelain) ]] || { echo 'Commit changes before building.' >&2; exit 1; }
 [[ $(uname -m) == x86_64 ]] || { echo 'Only amd64 packaging supported.' >&2; exit 1; }
-for tool in python3 openssl cmake ctest c++ pkg-config mpv ffmpeg ffprobe dpkg-deb zip unzip sha256sum xvfb-run timeout; do
+for tool in python3 openssl cmake ctest c++ pkg-config mpv ffmpeg ffprobe dpkg dpkg-deb zip unzip sha256sum xvfb-run timeout; do
   command -v "$tool" >/dev/null || { echo "Missing dependency: $tool" >&2; exit 1; }
 done
 pkg-config --exists Qt6Widgets Qt6Test || { echo 'Qt6 development dependencies missing.' >&2; exit 1; }
@@ -22,6 +22,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure
 bash tests/launcher_tests.sh
+bash tests/debian-version-tests.sh
 bash tests/playback_smoke.sh
 bash tests/spatial-smoke.sh
 code=0
@@ -31,7 +32,10 @@ bash packaging/build-deb.sh
 shopt -s nullglob
 packages=(dist/*.deb)
 [[ ${#packages[@]} == 1 ]]
-version=$(dpkg-deb -f "${packages[0]}" Version)
+version=$(build/iVivid --version | sed -n 's/^iVivid //p')
+deb_version=$(bash packaging/debian-version.sh "$version")
+[[ $(dpkg-deb -f "${packages[0]}" Version) == "$deb_version" ]]
+[[ ${packages[0]} == "dist/ivivid_${version}_amd64.deb" ]]
 [[ $(dpkg-deb -f "${packages[0]}" Architecture) == amd64 ]]
 dpkg-deb --contents "${packages[0]}"
 bundle="ivivid-$version-linux-amd64"

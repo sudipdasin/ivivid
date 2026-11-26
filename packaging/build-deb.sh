@@ -2,13 +2,14 @@
 set -euo pipefail
 version="$(build/iVivid --version | sed -n 's/^iVivid //p')"
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-beta\.[0-9]+)?$ ]] || { echo "Invalid application version" >&2; exit 1; }
+deb_version=$(bash packaging/debian-version.sh "$version")
 stage="$PWD/build/package-root"
 rm -rf "$stage"
 DESTDIR="$stage" cmake --install build --prefix /usr
 mkdir -p "$stage/DEBIAN"
 cat > "$stage/DEBIAN/control" <<EOF
 Package: ivivid
-Version: $version
+Version: $deb_version
 Section: video
 Priority: optional
 Architecture: amd64
