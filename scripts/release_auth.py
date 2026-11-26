@@ -32,8 +32,8 @@ def unique_object(pairs):
     return obj
 
 
-def verify_package(manifest, signature, public_key, package, expected_tag, expected_format):
-    """Verify only; caller must provide a pinned key and private staging directory."""
+def verify_manifest(manifest, signature, public_key, expected_tag, expected_format):
+    """Authenticate metadata before allocating package download bandwidth."""
     if not isinstance(expected_tag, str) or not TAG.fullmatch(expected_tag):
         raise ValueError('Invalid expected tag')
     if expected_format not in ('deb', 'zip'):
@@ -59,6 +59,11 @@ def verify_package(manifest, signature, public_key, package, expected_tag, expec
     asset = assets[name]
     if not isinstance(asset, dict) or set(asset) != {'size', 'sha256'} or type(asset['size']) is not int or not 0 < asset['size'] <= MAX_PACKAGE or not isinstance(asset['sha256'], str) or not HEX.fullmatch(asset['sha256']):
         raise ValueError('Invalid asset metadata')
+    return name, asset['size'], asset['sha256']
+
+
+def verify_payload(package, metadata):
+    name, size, sha256 = metadata
     package = Path(package)
     if package.name != name or package.is_symlink() or not stat.S_ISREG(package.stat().st_mode):
         raise ValueError('Incorrect package file')
@@ -67,9 +72,14 @@ def verify_package(manifest, signature, public_key, package, expected_tag, expec
     with package.open('rb') as stream:
         while block := stream.read(1024 * 1024):
             count += len(block)
-            if count > asset['size']:
+            if count > size:
                 raise ValueError('Package size mismatch')
             digest.update(block)
-    if count != asset['size'] or digest.hexdigest() != asset['sha256']:
+    if count != size or digest.hexdigest() != sha256:
         raise ValueError('Package integrity mismatch')
     return digest.hexdigest()
+
+
+def verify_package(manifest, signature, public_key, package, expected_tag, expected_format):
+    """Verify signed metadata and package bytes against the trusted key."""
+    return verify_payload(package, verify_manifest(manifest, signature, public_key, expected_tag, expected_format))

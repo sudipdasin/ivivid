@@ -5,7 +5,7 @@ import tempfile
 import urllib.request
 from pathlib import Path
 from urllib.parse import urlsplit
-from release_auth import TAG, MAX_PACKAGE, verify_package
+from release_auth import TAG, verify_manifest, verify_payload
 
 BASE = 'https://github.com/sudipdasin/ivivid/releases/download/'
 HOSTS = {'github.com', 'release-assets.githubusercontent.com', 'objects.githubusercontent.com'}
@@ -54,9 +54,11 @@ def stage_release(tag, fmt, public_key, cache, fetch=download):
         raise ValueError('Staging parent must be a private user-owned directory')
     stage = Path(tempfile.mkdtemp(prefix='ivivid-stage-', dir=cache))
     try:
-        for filename, limit in [('manifest.json', 65536), ('manifest.sig', 8192), (name, MAX_PACKAGE)]:
+        for filename, limit in [('manifest.json', 65536), ('manifest.sig', 8192)]:
             fetch(BASE + tag + '/' + filename, stage / filename, limit)
-        verify_package(stage/'manifest.json', stage/'manifest.sig', public_key, stage/name, tag, fmt)
+        metadata = verify_manifest(stage/'manifest.json', stage/'manifest.sig', public_key, tag, fmt)
+        fetch(BASE + tag + '/' + name, stage / name, metadata[1])
+        verify_payload(stage/name, metadata)
         return stage/name
     except BaseException:
         shutil.rmtree(stage)

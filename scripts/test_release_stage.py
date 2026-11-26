@@ -32,9 +32,24 @@ class StageTests(unittest.TestCase):
         self.assertEqual(len(self.requests), 6)
 
     def test_tampered_download_cleanup(self):
-        self.deb.write_bytes(b'evil bytes')
+        self.deb.write_bytes(b'x' * self.deb.stat().st_size)
         with self.assertRaises(ValueError): self.stage()
         self.assertEqual(list(self.cache.iterdir()), [])
+
+    def test_bad_signature_stops_before_package(self):
+        sig = self.output/'manifest.sig'
+        sig.write_bytes(b'invalid signature')
+        with self.assertRaises(ValueError): self.stage()
+        self.assertEqual(len(self.requests), 2)
+        self.assertEqual(list(self.cache.iterdir()), [])
+
+    def test_exact_signed_download_limit(self):
+        limits = []
+        def record(url, dest, limit):
+            limits.append(limit)
+            self.fetch(url, dest, limit)
+        self.stage(fetch=record)
+        self.assertEqual(limits, [65536, 8192, self.deb.stat().st_size])
 
     def test_network_failure_cleanup(self):
         def failed(url, dest, limit):
