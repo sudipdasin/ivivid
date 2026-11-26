@@ -4,7 +4,7 @@ root=$(git rev-parse --show-toplevel)
 cd "$root"
 [[ -z $(git status --porcelain) ]] || { echo 'Commit changes before building.' >&2; exit 1; }
 [[ $(uname -m) == x86_64 ]] || { echo 'Only amd64 packaging supported.' >&2; exit 1; }
-for tool in python3 cmake ctest c++ pkg-config mpv ffmpeg ffprobe dpkg-deb zip unzip sha256sum xvfb-run timeout; do
+for tool in python3 openssl cmake ctest c++ pkg-config mpv ffmpeg ffprobe dpkg-deb zip unzip sha256sum xvfb-run timeout; do
   command -v "$tool" >/dev/null || { echo "Missing dependency: $tool" >&2; exit 1; }
 done
 pkg-config --exists Qt6Widgets Qt6Test || { echo 'Qt6 development dependencies missing.' >&2; exit 1; }
