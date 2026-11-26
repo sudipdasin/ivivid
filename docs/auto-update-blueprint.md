@@ -23,3 +23,7 @@ The isolated release_stage.py module downloads only repository-named assets over
 ## Managed portable activation
 
 `portable_activate.py` selects preverified versions under a private `versions/VERSION` directory using an advisory lock and an atomically replaced, fsynced `active.json` state file. Activation requires a caller-provided health check; rollback restores the previous pointer while retaining the highest activated version to reject stale upgrades. Run `python3 scripts/test_portable_activate.py` for ten fixture tests. This is a state-management module, not a complete installer: the authenticated caller must populate the managed tree, enforce release channels, stop the running app, supply a bounded real health check and wire a launcher to the active pointer. A directory fsync failure after replacement can leave the new state visible; recovery must reread the state. No production install or real power-loss test is implied.
+
+## Integration candidate — signed release discovery
+
+Release selection now requires uploaded manifest.json and manifest.sig assets at the exact repository release URLs, in addition to the matching package and SHA256SUMS. This is an eligibility filter, not proof of signature validity. Unsigned legacy releases are not upgrade candidates. The nine discovery and ten activation fixture tests passed together independently; the native application, installed upgrades, live downloads, and end-to-end launcher/rollback remain unverified. Do not publish this candidate as a complete updater.

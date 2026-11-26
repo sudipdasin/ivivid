@@ -11,7 +11,7 @@ loader.exec_module(u)
 
 def release(v, **changes):
     tag = 'v' + v
-    names = [f'ivivid_{v}_amd64.deb', f'ivivid-{v}-linux-amd64.zip', 'SHA256SUMS']
+    names = [f'ivivid_{v}_amd64.deb', f'ivivid-{v}-linux-amd64.zip', 'manifest.json', 'manifest.sig', 'SHA256SUMS']
     value = dict(tag_name=tag, draft=False, prerelease='-beta.' in v, assets=[dict(name=n, browser_download_url=u.BASE+'download/'+tag+'/'+n, state='uploaded') for n in names])
     value.update(changes)
     return value
@@ -57,6 +57,18 @@ class UpdateTests(unittest.TestCase):
                 u.version(value)
         with self.assertRaises(ValueError):
             u.select_release({}, '2.4.0', 'stable', 'deb')
+
+    def test_signed_metadata_required(self):
+        for missing in ('manifest.json', 'manifest.sig'):
+            row = release('2.7.0')
+            row['assets'] = [a for a in row['assets'] if a['name'] != missing]
+            self.assertEqual(u.select_release([row, release('2.6.0')], '2.5.0', 'stable', 'deb'), '2.6.0')
+
+    def test_signed_metadata_url_and_state(self):
+        for field, value in [('browser_download_url', 'https://example.org/manifest.sig'), ('state', 'new')]:
+            row = release('2.6.0')
+            next(a for a in row['assets'] if a['name'] == 'manifest.sig')[field] = value
+            self.assertIsNone(u.select_release([row], '2.5.0', 'stable', 'zip'))
 
 
 if __name__ == '__main__':
