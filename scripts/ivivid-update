@@ -49,7 +49,7 @@ def select_release(releases, current, channel, package):
             url = BASE + 'download/' + tag + '/' + expected
             matches = [a for a in assets if isinstance(a, dict) and a.get('name') == expected]
             return len(matches) == 1 and matches[0].get('browser_download_url') == url and matches[0].get('state') == 'uploaded'
-        if not valid_asset(name) or not valid_asset('SHA256SUMS'):
+        if not all(valid_asset(required) for required in (name, 'SHA256SUMS', 'manifest.json', 'manifest.sig')):
             continue
         candidates.append((key, number))
     return max(candidates)[1] if candidates else None
