@@ -60,6 +60,18 @@ class PrepareTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.prepare(fingerprint='0'*64)
         self.assertFalse(self.requests)
 
+    def test_key_replaced_during_download(self):
+        from pathlib import Path
+        key = self.rootcase / 'mutable.pem'
+        key.write_bytes(self.public.read_bytes())
+        def replace_key(url, dest, limit):
+            key.write_bytes(b'changed after pin check')
+            self.fetch(url, dest, limit)
+        result = prepare('2.5.0', '2.6.0-beta.1', 'beta', 'deb', key,
+                         self.fingerprint, self.cache, replace_key)
+        self.assertTrue(Path(result['package']).is_file())
+        self.assertEqual(key.read_bytes(), b'changed after pin check')
+
     def test_signed_invalid_deb(self):
         self.deb.write_bytes(b'not a Debian package')
         shutil.rmtree(self.output)

@@ -27,3 +27,7 @@ The isolated release_stage.py module downloads only repository-named assets over
 ## Integration candidate — signed release discovery
 
 Release selection now requires uploaded manifest.json and manifest.sig assets at the exact repository release URLs, in addition to the matching package and SHA256SUMS. This is an eligibility filter, not proof of signature validity. Unsigned legacy releases are not upgrade candidates. The nine discovery and ten activation fixture tests passed together independently; the native application, installed upgrades, live downloads, and end-to-end launcher/rollback remain unverified. Do not publish this candidate as a complete updater.
+
+## Trust hardening
+
+Authenticate the manifest and signature before downloading the package; cap the transfer at the signed asset length and verify the resulting SHA-256 digest. Preparation snapshots the exact fingerprint-checked public key bytes in a private temporary directory for the duration of the transaction. Nine updater-only CTest suites and both bundled command help entrypoints passed locally on the combined Python candidate. Live network transport, production trust provisioning, installer activation and the native Qt build remain unverified.

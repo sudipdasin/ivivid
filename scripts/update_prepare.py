@@ -5,12 +5,14 @@ import json
 import platform
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 from deb_identity import verify_deb_identity
 from portable_activate import order
 from portable_stage import extract_portable
 from release_stage import stage_release, download
+from release_auth import bounded
 
 
 def prepare(current, target, channel, fmt, public_key, fingerprint, cache, fetch=download):
@@ -21,11 +23,15 @@ def prepare(current, target, channel, fmt, public_key, fingerprint, cache, fetch
     if platform.machine() not in ('x86_64', 'amd64'):
         raise ValueError('Unsupported architecture')
     key = Path(public_key)
-    if key.is_symlink() or not key.is_file() or key.stat().st_size > 16384:
-        raise ValueError('Invalid trusted key')
-    if hashlib.sha256(key.read_bytes()).hexdigest() != fingerprint:
+    key_bytes = bounded(key, 16384)
+    if hashlib.sha256(key_bytes).hexdigest() != fingerprint:
         raise ValueError('Trusted key fingerprint mismatch')
-    package = stage_release('v' + target, fmt, key, cache, fetch=fetch)
+    # Pin the exact checked bytes for this transaction, not a mutable path.
+    with tempfile.TemporaryDirectory(prefix='ivivid-trust-') as directory:
+        snapshot = Path(directory) / 'trusted.pem'
+        snapshot.write_bytes(key_bytes)
+        snapshot.chmod(0o600)
+        package = stage_release('v' + target, fmt, snapshot, cache, fetch=fetch)
     try:
         if fmt == 'deb':
             verify_deb_identity(package, target)
