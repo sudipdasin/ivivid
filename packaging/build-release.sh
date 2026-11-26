@@ -4,7 +4,7 @@ root=$(git rev-parse --show-toplevel)
 cd "$root"
 [[ -z $(git status --porcelain) ]] || { echo 'Commit changes before building.' >&2; exit 1; }
 [[ $(uname -m) == x86_64 ]] || { echo 'Only amd64 packaging supported.' >&2; exit 1; }
-for tool in cmake ctest c++ pkg-config mpv ffmpeg ffprobe dpkg-deb zip unzip sha256sum xvfb-run timeout; do
+for tool in python3 cmake ctest c++ pkg-config mpv ffmpeg ffprobe dpkg-deb zip unzip sha256sum xvfb-run timeout; do
   command -v "$tool" >/dev/null || { echo "Missing dependency: $tool" >&2; exit 1; }
 done
 pkg-config --exists Qt6Widgets Qt6Test || { echo 'Qt6 development dependencies missing.' >&2; exit 1; }
@@ -25,7 +25,7 @@ bash tests/launcher_tests.sh
 bash tests/playback_smoke.sh
 bash tests/spatial-smoke.sh
 code=0
-timeout 5s xvfb-run -a ./build/iVivid || code=$?
+IVIVID_DISABLE_UPDATE_CHECK=1 timeout 5s xvfb-run -a ./build/iVivid || code=$?
 [[ $code == 124 || $code == 0 ]]
 bash packaging/build-deb.sh
 shopt -s nullglob
@@ -36,9 +36,9 @@ version=$(dpkg-deb -f "${packages[0]}" Version)
 dpkg-deb --contents "${packages[0]}"
 bundle="ivivid-$version-linux-amd64"
 mkdir -p "$bundle/bin"
-install -m755 build/iVivid scripts/ivivid-play "$bundle/bin/"
+install -m755 build/iVivid scripts/ivivid-play scripts/ivivid-update "$bundle/bin/"
 cp packaging/iVivid.desktop "$bundle/"
-printf 'Requires Qt6 Widgets and mpv. Run bin/iVivid.\n' > "$bundle/README.txt"
+printf 'Requires Qt6 Widgets, mpv and Python 3. Run bin/iVivid.\n' > "$bundle/README.txt"
 zip -qr "dist/$bundle.zip" "$bundle"
 unzip -t "dist/$bundle.zip"
 (cd dist && sha256sum -- *.deb *.zip > SHA256SUMS && sha256sum -c SHA256SUMS)

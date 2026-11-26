@@ -4,7 +4,7 @@ app="${1:?path to iVivid binary required}"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 export XDG_CONFIG_HOME="$tmp"
-"$app" --version | grep -Fx 'iVivid 2.0.0-beta.1'
+"$app" --version | grep -Fx "iVivid ${2:?expected version required}"
 "$app" --help | grep -F -- '--check-config'
 if "$app" --version --unknown; then exit 1; fi
 if "$app" --help --export-config "$tmp/unexpected.conf"; then exit 1; fi
