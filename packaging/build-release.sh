@@ -3,11 +3,7 @@ set -euo pipefail
 root=$(git rev-parse --show-toplevel)
 cd "$root"
 [[ -z $(git status --porcelain) ]] || { echo 'Commit changes before building.' >&2; exit 1; }
-[[ $(uname -m) == x86_64 ]] || { echo 'Only amd64 packaging supported.' >&2; exit 1; }
-for tool in python3 openssl cmake ctest c++ pkg-config mpv ffmpeg ffprobe dpkg dpkg-deb zip unzip sha256sum xvfb-run timeout; do
-  command -v "$tool" >/dev/null || { echo "Missing dependency: $tool" >&2; exit 1; }
-done
-pkg-config --exists Qt6Widgets Qt6Test || { echo 'Qt6 development dependencies missing.' >&2; exit 1; }
+bash packaging/check-native-build.sh
 sha=$(git rev-parse HEAD)
 output=${1:-"$root/../ivivid-artifacts-${sha:0:12}"}
 output=$(realpath -m "$output")
@@ -37,6 +33,7 @@ deb_version=$(bash packaging/debian-version.sh "$version")
 [[ $(dpkg-deb -f "${packages[0]}" Version) == "$deb_version" ]]
 [[ ${packages[0]} == "dist/ivivid_${version}_amd64.deb" ]]
 [[ $(dpkg-deb -f "${packages[0]}" Architecture) == amd64 ]]
+PYTHONPATH="$work/scripts" python3 -c 'import sys; from deb_identity import verify_deb_identity; verify_deb_identity(sys.argv[1], sys.argv[2])' "${packages[0]}" "$version"
 dpkg-deb --contents "${packages[0]}"
 bundle="ivivid-$version-linux-amd64"
 mkdir -p "$bundle/bin"

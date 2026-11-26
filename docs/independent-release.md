@@ -9,3 +9,7 @@ Before publication, independently install the DEB on clean Ubuntu VMs and test p
 Debian metadata uses `~beta.N` for prereleases, while application versions, repository tags and asset filenames retain `-beta.N`. This lets the stable release supersede a beta under dpkg ordering. The standalone mapping test is `bash tests/debian-version-tests.sh`. A real install/upgrade test is still required.
 
 The 2.6 integration candidate includes the signed-release roundtrip CTest and Debian version mapping gate. Sign only independently verified artifacts using an externally managed production key as described in auto-update-blueprint.md. Full native build and installed upgrade verification are mandatory before publishing.
+
+## Native readiness and Debian identity gate
+
+Run `bash packaging/check-native-build.sh` to list missing native tools and Qt6 modules. Readiness is not proof of a successful build. Run `python3 scripts/test_deb_identity.py` independently to test real Debian fixture packages without installing them. The integration candidate adds this test to CTest and validates the newly built DEB internal package name, architecture and Debian version before artifact publication. The authenticated updater itself has not yet been wired to this helper. Full native testing remains required.
