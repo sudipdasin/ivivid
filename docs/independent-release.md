@@ -13,3 +13,7 @@ The 2.6 integration candidate includes the signed-release roundtrip CTest and De
 ## Native readiness and Debian identity gate
 
 Run `bash packaging/check-native-build.sh` to list missing native tools and Qt6 modules. Readiness is not proof of a successful build. Run `python3 scripts/test_deb_identity.py` independently to test real Debian fixture packages without installing them. The integration candidate adds this test to CTest and validates the newly built DEB internal package name, architecture and Debian version before artifact publication. The authenticated updater itself has not yet been wired to this helper. Full native testing remains required.
+
+## Qt-independent updater verification
+
+Run `cmake -S . -B build-updater -DIVIVID_UPDATER_ONLY=ON -DBUILD_TESTING=ON` followed by `ctest --test-dir build-updater --output-on-failure -j2`. Requires Python 3, OpenSSL and dpkg-deb. This mode runs eight updater test suites without configuring the native target. It is not a release build, and must never substitute for the complete native build and VM verification. The connected preparation module is available from source as `python3 scripts/update_prepare.py --help`; it requires an independently trusted public key and its pinned fingerprint, and never installs or executes an update. Production trust provisioning, packaging the helper and UI installation integration remain outstanding.
