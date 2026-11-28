@@ -1,0 +1,19 @@
+version: '2.6.0-beta.1.{build}'
+image: Ubuntu2404
+branches:
+  only:
+    - build/appveyor-2.6-preview
+skip_tags: true
+max_jobs: 1
+install:
+  - sh: bash packaging/appveyor-preview.sh prepare
+build_script:
+  - sh: bash packaging/appveyor-preview.sh build
+test: off
+artifacts:
+  - path: ivivid-ci-artifacts/*.deb
+  - path: ivivid-ci-artifacts/*.zip
+  - path: ivivid-ci-artifacts/SHA256SUMS
+  - path: ivivid-ci-artifacts/SOURCE_COMMIT
+  - path: ivivid-ci-artifacts/BUILD.log
+deploy: off
