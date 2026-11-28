@@ -1,5 +1,8 @@
 # iVivid
 
+> **Current AppVeyor build preview (2026-11-28):** [Setup, source checkpoint, test evidence and release gates](docs/APPVEYOR_BUILD_PREVIEW.md). This isolated Qt6 2.6 beta build configuration has passed 14 local wrapper fixtures; no hosted native package or installed acceptance yet. Historical CI/release instructions below are not authorization to execute GitHub Actions or CircleCI. No paid services.
+
+
 **Open-source C++/Qt video and audio enhancement for Linux, powered by mpv.**
 
 The public beta preview includes a Qt 6 GUI with separate **Video**, **Audio**, and **Experimental** tabs. Experimental features are opt-in and clearly marked.
